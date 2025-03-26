@@ -14,9 +14,9 @@ This a backenk of eRecrutment APP
 
 Before to get started these are the tools that you need.
 
-[x] Python 3.11+ (Complete with a [link](https://www.python.org/) related to the installation)
+[x] Python 3.10+ (Complete with a [link](https://www.python.org/) related to the installation)
 
-[x] Poetry 1.4+ (Complete with a [link](https://python-poetry.org/) related to the installation)
+[x] Poetry 1.8+ (Complete with a [link](https://python-poetry.org/) related to the installation)
 
 [x] VS Code (Complete with a [link](https://code.visualstudio.com/) related to the installation)
 
