@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "m2-projetsbse-erecruitement-cmr"
+version = "0.1.0"
+description = ""
+authors = ["Paule <85636937+katakratos@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.115.12"
+uvicorn = "^0.34.0"
+sqlalchemy = "^2.0.39"
+pydantic = "^2.10.6"
+bcrypt = "^4.3.0"
+pyjwt = "^2.10.1"
+python-dotenv = "^1.0.1"
+pydantic-settings = "^2.8.1"
+alembic = "^1.15.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
