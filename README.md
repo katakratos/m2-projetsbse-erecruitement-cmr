@@ -68,3 +68,12 @@ alembic revision --autogenerate -m "Initial migration"
 ```sh
 alembic upgrade head
 ```
+
+Commannde pour supprimer les données de la base de données et la recréer 
+```sh 
+rm your_database.db # Supprime la base de données 
+rm -rf alembic/version/* # Supprime tous les fichiers de migrations existantes
+alembic downgrade base
+alembic revision --autogenerate -m "nom_de_opération_effectuée" # Détecte les migrations, il faut spécifier le noms de l'opération effectuée
+alembic upgrade head 
+```

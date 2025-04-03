@@ -41,7 +41,7 @@ def get_all_user(db: Session = Depends(get_db)):
     recruiters = db.query(User).all()
 
     if not recruiters:
-        raise HTTPException(status_code=404, detai="Aucun recruiter trouvé")
+        raise HTTPException(status_code=404, detail="Aucun recruiter trouvé")
     return recruiters
 
 
