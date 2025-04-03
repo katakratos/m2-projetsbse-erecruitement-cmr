@@ -16,14 +16,13 @@ def get_db():
         db.close()
 
 
-print("Création des tables dans la base de données...")
-Base.metadata.create_all(bind=engine)
-print("Tables créées avec succès !")
+
+
 def init_db():
+    
     """Initialise la base de données (utile uniquement en développement)."""
     print("Initialisation de la base de données...")
     Base.metadata.create_all(bind=engine)  # Crée les tables si elles n'existent pas encore
 
-if __name__ == "__main__":
-    init_db()
+
 
