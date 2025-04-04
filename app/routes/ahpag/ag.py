@@ -2,7 +2,6 @@ import json
 from fastapi import APIRouter
 import numpy as np
 import pygad
-from typing import List, Dict
 
 router = APIRouter(prefix="/ag-genetic-team", tags=["Algo-Genetic-Team"])
 
