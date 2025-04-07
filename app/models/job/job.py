@@ -1,15 +1,11 @@
-from sqlalchemy import ForeignKey, String, Integer, Column, Text
-from sqlalchemy.orm import relationship
-from app.models.criteria.criteria import Criteria
-from app.models.employer.employer import Employer
+from sqlalchemy import Column, Integer, String, Text
+
 from app.services.database import Base
 
 
-
-
 class Job(Base):
-    __tablename__ = 'jobs'
-    
+    __tablename__ = "jobs"
+
     id = Column(Integer, primary_key=True, index=True)
     description = Column(String, index=True)
     title = Column(String, index=True)
