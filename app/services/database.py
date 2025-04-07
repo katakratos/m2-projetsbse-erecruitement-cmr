@@ -2,11 +2,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-DATABASE_URL = "sqlite:///./erecruitement.db"
+from app.services.config import settings
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+DATABASE_URL = settings.DATABASE_URL
+
+
+engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
 
 def get_db():
     db = SessionLocal()
@@ -16,13 +20,9 @@ def get_db():
         db.close()
 
 
-
-
 def init_db():
-    
     """Initialise la base de données (utile uniquement en développement)."""
     print("Initialisation de la base de données...")
-    Base.metadata.create_all(bind=engine)  # Crée les tables si elles n'existent pas encore
-
-
-
+    Base.metadata.create_all(
+        bind=engine
+    )  # Crée les tables si elles n'existent pas encore

@@ -5,6 +5,9 @@ description = ""
 authors = ["Paule <85636937+katakratos@users.noreply.github.com>"]
 readme = "README.md"
 
+package-mode = false
+
+
 [tool.poetry.dependencies]
 python = "^3.10"
 fastapi = "^0.115.12"
@@ -21,6 +24,7 @@ pandas = "^2.2.3"
 aiofiles = "^24.1.0"
 python-multipart = "^0.0.20"
 pygad = "^3.4.0"
+psycopg2 = "^2.9.10"
 
 
 [build-system]
