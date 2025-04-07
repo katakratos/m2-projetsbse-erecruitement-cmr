@@ -63,3 +63,4 @@ Thumbs.db
 # Project specific
 poetry.lock
 .pytest_cache/
+erecruitement.db
