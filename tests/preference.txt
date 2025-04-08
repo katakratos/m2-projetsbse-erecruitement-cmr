@@ -10,3 +10,4 @@
       ]
 }
 
+DATABASE_URL = "postgresql://postgres:paule123@localhost:5432/erecrutcmr"
