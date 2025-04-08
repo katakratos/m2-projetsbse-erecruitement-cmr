@@ -1,18 +1,11 @@
-from os import path
 import sys
+from os import path
 
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 from logging.config import fileConfig
+
 from alembic import context
-
-from app.models.user.user import User
-from app.models.candidates.candidat import Candidate
-from app.models.job.job import Job
-from app.models.employer.employer import Employer
-from app.models.cv.cv import CV
-from app.models.criteria.criteria import Criteria
-
 from app.services.database import Base, engine
 
 # Ajoutez le chemin de votre projet au PYTHONPATH
@@ -29,6 +22,7 @@ if config.config_file_name is not None:
 
 target_metadata = Base.metadata
 
+
 def run_migrations_offline():
     """Run migrations in 'offline' mode."""
 
@@ -43,6 +37,7 @@ def run_migrations_offline():
     with context.begin_transaction():
         context.run_migrations()
 
+
 def run_migrations_online():
     """Run migrations in 'online' mode.
 
@@ -52,11 +47,8 @@ def run_migrations_online():
     """
     connectable = engine
 
-
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

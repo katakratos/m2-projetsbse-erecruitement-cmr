@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.services.database import get_db
+
 from app.models.user.user import User
-from app.schemas.user.user import UserCreate, UserResponse
+from app.schemas.user.user import UserCreate, UserResponse, UserUpdate
+from app.services.database import get_db
 from app.services.utils import hash_password
-from app.schemas.user.user import UserUpdate
 
 router = APIRouter(prefix="/Recruiters", tags=["Users"])
+
 
 @router.post("/", response_model=UserResponse)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
@@ -25,24 +26,26 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db.refresh(db_user)
 
     # Retourne l'utilisateur sans son mot de passe
-    return UserResponse(id=db_user.id, email=db_user.email) # Grâce à `response_model=UserResponse`, FastAPI formatera la réponse selon ce modèle.
+    return UserResponse(
+        id=db_user.id, email=db_user.email
+    )  # Grâce à `response_model=UserResponse`, FastAPI formatera la réponse selon ce modèle.
 
 
-@router.get("/{id}", response_model=UserResponse)
-def get_user(id: str, db: Session = Depends(get_db)):
-    db_user = db.query(User).filter(User.id == id).first()
-    if not db_user:
-        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
-    
-    return UserResponse(id=db_user.id, email=db_user.email)
-
-@router.get("/all", response_model=UserResponse )
+@router.get("/all", response_model=list[UserResponse])
 def get_all_user(db: Session = Depends(get_db)):
     recruiters = db.query(User).all()
-
     if not recruiters:
         raise HTTPException(status_code=404, detail="Aucun recruiter trouvé")
     return recruiters
+
+
+@router.get("/{id}", response_model=UserResponse)
+def get_user(id: int, db: Session = Depends(get_db)):
+    db_user = db.query(User).filter(User.id == id).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+
+    return UserResponse(id=db_user.id, email=db_user.email)
 
 
 @router.put("/{email}", response_model=UserResponse)

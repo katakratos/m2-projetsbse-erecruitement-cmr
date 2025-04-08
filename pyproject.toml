@@ -1,29 +1,29 @@
 [tool.poetry]
-name = "m2-projetsbse-erecruitement-cmr"
-version = "0.1.0"
-description = ""
 authors = ["Paule <85636937+katakratos@users.noreply.github.com>"]
+description = ""
+name = "m2-projetsbse-erecruitement-cmr"
 readme = "README.md"
+version = "0.1.0"
+
+package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.10"
-fastapi = "^0.115.12"
-uvicorn = "^0.34.0"
-sqlalchemy = "^2.0.39"
-pydantic = "^2.10.6"
-bcrypt = "^4.3.0"
-pyjwt = "^2.10.1"
-python-dotenv = "^1.0.1"
-pydantic-settings = "^2.8.1"
+aiofiles = "^24.1.0"
 alembic = "^1.15.1"
+bcrypt = "^4.3.0"
+fastapi = "^0.115.12"
 numpy = "^2.2.4"
 pandas = "^2.2.3"
-aiofiles = "^24.1.0"
-python-multipart = "^0.0.20"
+pydantic = "^2.10.6"
+pydantic-settings = "^2.8.1"
 pygad = "^3.4.0"
-psycopg2-binary = "^2.9.10"
-
+pyjwt = "^2.10.1"
+python = "^3.10"
+python-dotenv = "^1.0.1"
+python-multipart = "^0.0.20"
+sqlalchemy = "^2.0.39"
+uvicorn = "^0.34.0"
 
 [build-system]
-requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core"]

@@ -1,8 +1,10 @@
-from pydantic_settings import BaseSettings
-from dotenv import load_dotenv
 import os
 
+from dotenv import load_dotenv
+from pydantic_settings import BaseSettings
+
 load_dotenv()
+
 
 class Settings(BaseSettings):
     SECRET_KEY: str = os.getenv("SECRET_KEY")
@@ -10,6 +12,7 @@ class Settings(BaseSettings):
     DEBUG: bool = False
 
     class Config:
-        env_file=".env"
+        env_file = ".env"
+
 
 settings = Settings()

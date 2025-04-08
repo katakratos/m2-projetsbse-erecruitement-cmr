@@ -3,12 +3,11 @@
 This a backenk of eRecrutment APP
 
 ## Table of contents
+
 - [eRecrutement](#erecrutement)
 
-    - [Table of contents](#table-of-contents)
-    -[Prerequisites](#prerequisites)
-    -[I. Installation and configuration]
-     (#i-installation-and-configuration)
+  - [Table of contents](#table-of-contents) -[Prerequisites](#prerequisites) -[I. Installation and configuration]
+    (#i-installation-and-configuration)
 
 ## Prerequisites
 
@@ -39,12 +38,23 @@ Move to workdir
 ```sh
 cd m2_projetsbse-erecruitement-cmr/
 ```
+
+Refer to **.env.example** file to create your own **.env** file to configurate Nzhinu-Farm App
+
+> **_ATTENTION_** The app need specifics variables environments to launch, refer to .env.example file
+
 #### I.1.1. Base installation
 
 Install python dependencies
 
 ```sh
 poetry install --all-extras
+```
+
+Apres installation des packages s'il y a erreur taper cette commande et poetry se chargera de resoudre le probleme de file/folder inexistantes
+
+```sh
+poetry lock --no-update
 ```
 
 Active virtual environment
@@ -69,11 +79,12 @@ alembic revision --autogenerate -m "Initial migration"
 alembic upgrade head
 ```
 
-Commannde pour supprimer les données de la base de données et la recréer 
-```sh 
-rm your_database.db # Supprime la base de données 
+Commannde pour supprimer les données de la base de données et la recréer
+
+```sh
+rm your_database.db # Supprime la base de données
 rm -rf alembic/version/* # Supprime tous les fichiers de migrations existantes
 alembic downgrade base
 alembic revision --autogenerate -m "nom_de_opération_effectuée" # Détecte les migrations, il faut spécifier le noms de l'opération effectuée
-alembic upgrade head 
+alembic upgrade head
 ```

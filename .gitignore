@@ -64,3 +64,6 @@ Thumbs.db
 poetry.lock
 .pytest_cache/
 erecruitement.db
+
+#database
+*.db

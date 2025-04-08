@@ -1,5 +1,7 @@
-from sqlalchemy import Column, Integer, VARCHAR, String
+from sqlalchemy import VARCHAR, Column, Integer, String
+
 from app.services.database import Base
+
 
 class User(Base):
     __tablename__ = "users"
@@ -10,9 +12,4 @@ class User(Base):
 
     type = Column(String)
 
-    __mapper_args__ = {
-        'polymorphic_identity': 'user',
-        'polymorphic_on': type
-    }
-    
-  
+    __mapper_args__ = {"polymorphic_identity": "user", "polymorphic_on": type}
