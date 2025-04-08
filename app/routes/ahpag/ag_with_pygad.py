@@ -70,6 +70,7 @@ ga_instance = pygad.GA(
     fitness_func=fitness_function,
     sol_per_pop=POPULATION_SIZE,
     num_genes=len(weights),
+    mutation_num_genes=3,
     initial_population=population,
     mutation_type=mutation_function,  # Utiliser notre fonction de mutation personnalisée
     gene_space=[
