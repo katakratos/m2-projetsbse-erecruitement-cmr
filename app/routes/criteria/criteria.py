@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.models.criteria.criteria import Criteria
-from app.models.job.job import Job  # 🔹 Assurez-vous d'avoir le modèle Job
 from app.schemas.criteria.criteria import CriteriaCreateUpdate, CriteriaResponse
 from app.services.database import get_db
 
@@ -14,9 +13,6 @@ router = APIRouter(prefix="/criteria", tags=["Criteria"])
 # ✅ Créer un critère
 @router.post("/", response_model=CriteriaResponse)
 def create_criteria(data: CriteriaCreateUpdate, db: Session = Depends(get_db)):
-    job = db.query(Job).filter(Job.id == data.job_id).first()
-    if not job:
-        raise HTTPException(status_code=404, detail="Job introuvable")
 
     new_criteria = Criteria(**data.dict())
     db.add(new_criteria)
@@ -66,7 +62,5 @@ def delete_criteria(criteria_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Critère introuvable")
 
     db.delete(criteria)
-    db.commit()
-    return {"message": "Critère supprimé"}
     db.commit()
     return {"message": "Critère supprimé"}
