@@ -274,6 +274,8 @@ poetry.lock
 
 # Ignore everything in media/
 media/*
+/media/*
+data
 
 # But keep the .gitkeep file
-!media/.gitkeep
+!/media/.gitkeep
