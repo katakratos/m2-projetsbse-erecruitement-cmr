@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from app.models.candidates.candidat import Candidate
 from app.services.database import get_db
 
-router = APIRouter(prefix="/ahp-genetic", tags=["AHP-Method"])
+router = APIRouter(prefix="/ahp-method", tags=["AHP-Method"])
 
 
 #  Définition du modèle Pydantic pour recevoir la matrice AHP
