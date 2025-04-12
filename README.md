@@ -15,13 +15,15 @@ Before to get started these are the tools that you need.
 
 [x] Python 3.10+ (Complete with a [link](https://www.python.org/) related to the installation)
 
-[x] Poetry 1.8+ (Complete with a [link](https://python-poetry.org/) related to the installation)
+[x] Poetry 1.8+ (Complete with a [link](https://python-poetry.org/) related to the installation) ## de préférence la version 1.8.3
 
 [x] VS Code (Complete with a [link](https://code.visualstudio.com/) related to the installation)
 
 [ ] Docker (Complete with a [link](https://www.docker.com/) related to the installation)
 
 [ ] sqlite3 (Complete with a [link](https://www.sqlite.org/) related to the installation)
+
+[ ] postgres
 
 ## I. Installation and configuration
 
@@ -57,7 +59,7 @@ Apres installation des packages s'il y a erreur taper cette commande et poetry s
 poetry lock --no-update
 ```
 
-Active virtual environment
+Active virtual environement
 
 ```sh
 poetry shell

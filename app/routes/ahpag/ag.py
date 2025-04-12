@@ -148,7 +148,7 @@ def analyze_improvements(original_team, optimized_team):
                     ),
                     2,
                 ),
-                "criteria_improvements": criteria_improvements,
+                "score_improvements": criteria_improvements,
             }
         )
     return improvements
@@ -183,8 +183,8 @@ def run_team_genetic_algorithm():
                     ),
                     2,
                 ),
-                "criteria": [round(float(value), 2) for value in candidate_criteria],
-                "original_criteria": [
+                "new_score": [round(float(value), 2) for value in candidate_criteria],
+                "original_score": [
                     round(float(value), 2) for value in population[closest_idx]
                 ],
             }
@@ -192,7 +192,7 @@ def run_team_genetic_algorithm():
 
     original_team = []
     for candidate in team_candidates:
-        original_team.extend(candidate["original_criteria"])
+        original_team.extend(candidate["original_score"])
 
     improvements = analyze_improvements(original_team, best_team)
 

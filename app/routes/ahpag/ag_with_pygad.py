@@ -4,7 +4,7 @@ import numpy as np
 import pygad
 from fastapi import APIRouter
 
-router = APIRouter(prefix="/ahp-genetic", tags=["Algo-Genetic"])
+router = APIRouter(prefix="/ag-genetic", tags=["Algo-Genetic"])
 
 # Paramètres de l'algorithme génétique
 POPULATION_SIZE = 50
