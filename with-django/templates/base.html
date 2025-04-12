@@ -1,0 +1,126 @@
+{% extends "bash.html" %}
+{% load static %}
+
+{% block styles %}
+<style>
+    .message-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+    .message {
+        padding: 10px 20px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 0.3s, fadeOut 0.5s 5s forwards;
+    }
+    .message-success {
+        background-color: #10B981;
+        color: white;
+    }
+    .message-error {
+        background-color: #EF4444;
+        color: white;
+    }
+    .message-warning {
+        background-color: #F59E0B;
+        color: white;
+    }
+    .message-info {
+        background-color: #3B82F6;
+        color: white;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeOut {
+        from { opacity: 1; transform: translateY(0); }
+        to { opacity: 0; transform: translateY(-10px); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col min-h-screen bg-gray-100">
+    <nav class="bg-white shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <a href="{% url 'job_list' %}" class="flex-shrink-0 flex items-center">
+                        <img class="h-8 w-auto" src="{% static 'img/logo.png' %}" alt="eRecruitment">
+                        <span class="ml-2 text-xl font-bold text-blue-600">eRecruitment</span>
+                    </a>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="{% url 'job_list' %}" class="border-transparent text-gray-500 hover:border-blue-500 hover:text-blue-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Jobs
+                        </a>
+                    </div>
+                </div>
+                <div class="hidden sm:ml-6 sm:flex sm:items-center">
+                    {% if user.is_authenticated %}
+                        <div class="ml-3 relative" x-data="{ open: false }">
+                            <div>
+                                <button @click="open = !open" class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-blue-300 transition duration-150 ease-in-out">
+                                    <span class="p-2 bg-blue-500 text-white size-8 rounded-full">{{ user.username|first }}</span>
+                                </button>
+                            </div>
+                            <div x-show="open" @click.away="open = false" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg">
+                                <div class="py-1 rounded-md bg-white shadow-xs">
+                                    {% if user.jobseeker %}
+                                        <a href="{% url 'jobseeker_dashboard' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Dashboard</a>
+                                    {% elif user.employer %}
+                                        <a href="{% url 'employer_dashboard' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Dashboard</a>
+                                        <a href="{% url 'job_create' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Post a Job</a>
+                                    {% endif %}
+                                    <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="text-blue-600 hover:text-blue-800 font-medium">Login</a>
+                        <span class="mx-2 text-gray-300">|</span>
+                        <div class="relative" x-data="{ open: false }">
+                            <button @click="open = !open" class="text-blue-600 hover:text-blue-800 font-medium">
+                                Register
+                            </button>
+                            <div x-show="open" @click.away="open = false" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg">
+                                <div class="py-1 rounded-md bg-white shadow-xs">
+                                    <a href="{% url 'register_jobseeker' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">As Job Seeker</a>
+                                    <a href="{% url 'register_employer' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">As Employer</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    {% if messages %}
+    <div class="message-container">
+        {% for message in messages %}
+        <div class="message message-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <main class="flex-grow">
+        <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            {% block main_content %}{% endblock main_content %}
+        </div>
+    </main>
+
+    <footer class="bg-white">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-gray-500 text-sm">
+                &copy; {% now "Y" %} eRecruitment. All rights reserved.
+            </p>
+        </div>
+    </footer>
+</div>
+{% endblock content %}

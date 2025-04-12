@@ -1,0 +1,29 @@
+/* FILE: static/css/fonts.css */
+/* @font-face {
+    font-family: 'Inter';
+    src: url('{% static "fonts/inter/Inter-VariableFont_opsz,wght.ttf" %}') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Inter';
+    src: url('{% static "fonts/inter/Inter-Italic-VariableFont_opsz,wght.ttf" %}') format('truetype');
+    font-weight: 100 900;
+    font-style: italic;
+} */
+
+
+@font-face {
+    font-family: 'Inter';
+    src: url('../fonts/Inter/Inter-VariableFont_opsz,wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Inter';
+    src: url('../fonts/Inter/Inter-Italic-VariableFont_opsz,wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: italic;
+}

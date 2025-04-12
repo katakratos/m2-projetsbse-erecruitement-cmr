@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main_content %}
+<div class="bg-white shadow overflow-hidden sm:rounded-lg">
+    <div class="px-4 py-5 sm:px-6 flex items-center justify-between">
+        <div>
+            <h2 class="text-lg leading-6 font-medium text-gray-900">Rank Candidates for {{ job.title }}</h2>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                Apply AHP weights to calculate final candidate ranking
+            </p>
+        </div>
+        <a href="{% url 'job_detail' job.id %}" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <svg class="mr-2 -ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Job
+        </a>
+    </div>
+    
+    <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+        {% if candidate_count == 0 %}
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-700">
+                            No candidate data found. Please <a href="{% url 'process_applications' job.id %}" class="font-medium underline hover:text-yellow-600">process the applications</a> first.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {% elif not has_ahp_priority %}
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-700">
+                            No AHP priorities have been set. Please <a href="{% url 'ahp_matrix' job.id %}" class="font-medium underline hover:text-yellow-600">set up the AHP matrix</a> before ranking candidates.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="text-center">
+                <p class="mb-4 text-gray-700">
+                    This will apply the AHP weights from your criteria priorities to all candidate data, recalculating their rankings.
+                </p>
+                <div id="ranking-status" class="mb-4"></div>
+                <form id="rank-form" method="post" action="{% url 'rank_candidates' job.id %}" class="inline-block">
+                    {% csrf_token %}
+                    <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <svg class="mr-2 -ml-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"></path>
+                        </svg>
+                        Calculate Rankings
+                    </button>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('rank-form');
+    const statusEl = document.getElementById('ranking-status');
+    
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            statusEl.innerHTML = '<div class="text-blue-600">Processing... Please wait.</div>';
+            
+            // Get the form data
+            const formData = new FormData(form);
+            
+            // Send the form data via AJAX
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    statusEl.innerHTML = `<div class="text-green-600">Success! Ranked ${data.candidates_ranked} candidates.</div>`;
+                    setTimeout(() => {
+                        window.location.href = "{% url 'view_candidate_results' job.id %}";
+                    }, 1500);
+                } else {
+                    statusEl.innerHTML = `<div class="text-red-600">Error: ${data.message}</div>`;
+                }
+            })
+            .catch(error => {
+                statusEl.innerHTML = '<div class="text-red-600">An error occurred. Please try again.</div>';
+                console.error('Error:', error);
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

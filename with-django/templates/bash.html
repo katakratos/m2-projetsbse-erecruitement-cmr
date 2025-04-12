@@ -1,0 +1,48 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- Basic Page Info -->
+        <meta charset="utf-8" />
+        {% block head %}
+        <title>eRecruitment</title>
+        {% endblock head %}
+
+        <!-- Mobile Specific Metas -->
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, maximum-scale=1"
+        />
+
+        <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon_io/apple-touch-icon.png' %}">
+        <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon_io/favicon-32x32.png' %}">
+        <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon_io/favicon-16x16.png' %}">
+        <link rel="manifest" href="/site.webmanifest">
+
+        <!-- Google Font -->
+        <link
+            href="{% static 'css/fonts.css' %}"
+            rel="stylesheet"
+        />
+        <!-- CSS -->
+        
+        {% comment %} <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp,container-queries"></script> {% endcomment %}
+        <script src="{% static 'js/tailwindcdn.es' %}"></script>
+        <script src="{% static 'js/tailwindcss.js' %}"></script>
+            <script src="{% static 'js/alpine.cdn.min.js' %}"></script>
+        <script src="{% static 'js/htmx.min.js' %}"></script>
+
+
+        {% block seo %}{% endblock seo %}
+
+        {% block styles %}{% endblock styles %}
+
+    </head>
+    <body>
+        
+        {% block content %}{% endblock content %}
+        {% block script %}{% endblock script %}
+        <!-- JS -->
+        
+    </body>
+</html>

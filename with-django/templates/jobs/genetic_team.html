@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% load jobs_extras %}
+
+{% block main_content %}
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+    <div class="px-4 py-5 sm:px-6 flex items-center justify-between">
+        <div>
+            <h2 class="text-lg leading-6 font-medium text-gray-900">Genetic Algorithm Team Selection for {{ job.title }}</h2>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                Using artificial intelligence to create an optimal team composition
+            </p>
+        </div>
+        <div class="flex space-x-3">
+            <a href="{% url 'job_detail' job.id %}" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <svg class="mr-2 -ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Job
+            </a>
+            <a href="{% url 'view_candidate_results' job.id %}" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <svg class="mr-2 -ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                View All Candidates
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if candidate_count == 0 %}
+<div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+    <div class="flex">
+        <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+        </div>
+        <div class="ml-3">
+            <p class="text-sm text-yellow-700">
+                No candidate data found. Please <a href="{% url 'process_applications' job.id %}" class="font-medium underline hover:text-yellow-600">process the applications</a> first.
+            </p>
+        </div>
+    </div>
+</div>
+{% else %}
+
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+    <div class="px-4 py-5 sm:px-6">
+        <div class="prose">
+            <h3>About the Genetic Algorithm Team Selection</h3>
+            <p>
+                This tool uses a genetic algorithm to find the optimal team composition based on candidate evaluations and AHP weights.
+                The algorithm maximizes the overall team performance by optimizing individual criteria scores.
+            </p>
+            <p>
+                You can set the desired team size and run the optimization. The genetic algorithm will:
+            </p>
+            <ul>
+                <li>Generate a population of possible team configurations</li>
+                <li>Evaluate each team based on weighted criteria scores</li>
+                <li>Select the best teams and create new generations through crossover and mutation</li>
+                <li>Converge to an optimal team after {{ max_generations|default:"100" }} generations</li>
+            </ul>
+        </div>
+        
+        <!-- Configuration form -->
+        <form method="post" action="" class="mt-6">
+            {% csrf_token %}
+            <div class="flex items-end space-x-4">
+                <div>
+                    <label for="team_size" class="block text-sm font-medium text-gray-700">Team Size</label>
+                    <div class="mt-1">
+                        <input type="number" name="team_size" id="team_size" min="1" max="{{ candidate_count }}" value="{{ team_size }}" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-24 sm:text-sm border-gray-300 rounded-md">
+                    </div>
+                </div>
+                <button type="submit" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <svg class="mr-1.5 -ml-0.5 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                    Run Optimization
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if optimized_team %}
+<!-- Results section -->
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+    <div class="px-4 py-5 sm:px-6 flex justify-between">
+        <div>
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Optimized Team Results</h3>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">Selected {{ optimized_team.team_size }} members to form the optimal team</p>
+        </div>
+        <div class="text-right">
+            <p class="text-xl font-semibold text-blue-600">Total Score: {{ optimized_team.total_score }}</p>
+        </div>
+    </div>
+    
+    <div class="border-t border-gray-200">
+        <ul>
+            {% for member in optimized_team.team_members %}
+            <li class="px-4 py-6 {% cycle 'bg-gray-50' '' %}">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-900">{{ member.name }}</h4>
+                        <div class="flex space-x-4 mt-2">
+                            <p class="text-sm text-gray-500">Original Score: {{ member.original_weighted }}</p>
+                            <p class="text-sm text-green-600">Optimized Score: {{ member.optimized_weighted }}</p>
+                            <p class="text-sm font-medium {% if member.improvement > 0 %}text-green-600{% else %}text-gray-600{% endif %}">
+                                Improvement: {{ member.improvement }}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Overview -->
+                    <div>
+                        <span class="px-2 py-1 text-xs font-medium rounded-full
+                            {% if member.improvement >= 5 %}
+                              bg-green-100 text-green-800
+                            {% elif member.improvement > 0 %}
+                              bg-blue-100 text-blue-800
+                            {% else %}
+                              bg-yellow-100 text-yellow-800
+                            {% endif %}
+                        ">
+                            {% if member.improvement >= 5 %}
+                                Significant Improvement
+                            {% elif member.improvement > 0 %}
+                                Moderate Improvement
+                            {% else %}
+                                Already Optimized
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Radar chart showing the scores -->
+                <div class="mt-4">
+                    <h5 class="text-sm font-medium text-gray-700 mb-2">Score Comparison</h5>
+                    <div class="grid grid-cols-7 gap-2">
+                        {% for i in "0123456" %}
+                            {% with criterion_name=optimized_team.criteria_names|index:forloop.counter0 original_score=member.original_scores|index:forloop.counter0 optimized_score=member.optimized_scores|index:forloop.counter0 %}
+                            <div>
+                                <div class="text-xs font-medium text-gray-900 truncate" title="{{ criterion_name }}">{{ criterion_name|truncatechars:15 }}</div>
+                                <!-- Score visualization -->
+                                <div class="mt-1 relative h-24 bg-gray-100 rounded w-full">
+                                    <!-- Original score -->
+                                    <div class="absolute bottom-0 left-0 right-0 bg-blue-300 rounded-b" style="height: {{ original_score }}%;"></div>
+                                    <!-- Optimized score -->
+                                    <div class="absolute bottom-0 left-0 right-0 bg-green-500 rounded-b" style="height: {{ optimized_score }}%; width: 60%; left: 20%"></div>
+                                    <!-- Score labels -->
+                                    <div class="absolute bottom-0 inset-x-0 text-xs text-center pb-1 font-medium">{{ original_score }}</div>
+                                    <div class="absolute bottom-0 inset-x-0 text-xs text-center pb-1 text-white">{{ optimized_score }}</div>
+                                </div>
+                            </div>
+                            {% endwith %}
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                {% if member.criteria_improvements %}
+                <div class="mt-4">
+                    <h5 class="text-sm font-medium text-gray-700 mb-2">Improvements in Criteria</h5>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {% for improvement in member.criteria_improvements %}
+                        <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                            <div class="text-sm font-medium text-gray-900">
+                                {{ optimized_team.criteria_names|index:improvement.criterion }}
+                            </div>
+                            <div class="mt-1 flex justify-between text-sm">
+                                <span class="text-gray-600">Original: {{ improvement.original }}</span>
+                                <span class="text-green-600">→</span>
+                                <span class="text-green-600">Optimized: {{ improvement.optimized }}</span>
+                            </div>
+                            <div class="mt-1 text-sm font-medium text-green-600">
+                                +{{ improvement.improvement }} improvement
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}
+
+{% block script %}
+{% endblock %}

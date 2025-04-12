@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load matrix_tags %}
+
+{% block main_content %}
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+    <div class="px-4 py-5 sm:px-6 flex items-center justify-between">
+        <div>
+            <h2 class="text-lg leading-6 font-medium text-gray-900">AHP Priority Matrix for {{ job.title }}</h2>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">Set the relative importance between criteria pairs</p>
+            {% if job.ahp_priority %}
+                <div class="mt-2">
+                    <span class="text-sm text-gray-500">Current Consistency Ratio: {{ job.ahp_priority.consistency_ratio|floatformat:4 }}</span>
+                    {% if job.ahp_priority.is_consistent %}
+                        <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Consistent</span>
+                    {% else %}
+                        <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Inconsistent</span>
+                        <span class="ml-1 text-xs text-gray-500">(Should be < 0.1)</span>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+        <!-- Back button -->
+        <div>
+            <a href="{% url 'job_detail' job.id %}" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <svg class="mr-2 -ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Job
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if auto_generated %}
+<div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
+    <div class="flex">
+        <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+        </div>
+        <div class="ml-3">
+            <p class="text-sm text-blue-700">
+                We've automatically generated a consistent set of priorities for you. These values produce a valid 
+                consistency ratio (< 0.1) and will work well for evaluating candidates. Feel free to adjust the values 
+                if you want to customize the priorities, but be aware that changes may affect consistency.
+            </p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Display any form errors at the top level -->
+{% if form.errors %}
+<div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+    <h3 class="text-sm font-medium mb-2">Please correct the following errors:</h3>
+    <ul class="list-disc pl-5 text-xs">
+        {% for field in form %}
+            {% for error in field.errors %}
+                <li>{{ field.label }}: {{ error }}</li>
+            {% endfor %}
+        {% endfor %}
+        {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<!-- Show current consistency information if available -->
+{% if consistency_info.calculated %}
+<div class="bg-{% if consistency_info.is_consistent %}green{% else %}yellow{% endif %}-50 border border-{% if consistency_info.is_consistent %}green{% else %}yellow{% endif %}-200 p-4 rounded mb-4">
+    <p class="text-sm text-{% if consistency_info.is_consistent %}green{% else %}yellow{% endif %}-700">
+        {{ consistency_info.message }}
+    </p>
+</div>
+{% endif %}
+
+<div class="bg-white shadow overflow-hidden sm:rounded-lg">
+    <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">Criteria Comparison</h3>
+        <p class="mt-1 max-w-2xl text-sm text-gray-500">For each pair, select how much more important the first criterion is compared to the second.</p>
+    </div>
+    
+    <div class="border-t border-gray-200 px-4 py-5 sm:p-6">
+        <div class="mb-6 bg-blue-50 p-4 rounded">
+            <h3 class="text-lg font-medium text-blue-800">AHP Preference Scale</h3>
+            <p class="text-sm text-blue-600 mb-2">Use the following scale to compare criteria:</p>
+            <ul class="text-sm text-blue-600 list-disc pl-5">
+                <li>1: Equal importance</li>
+                <li>3: Moderate importance</li>
+                <li>5: Strong importance</li>
+                <li>7: Very strong importance</li>
+                <li>9: Extreme importance</li>
+                <li>2, 4, 6, 8: Intermediate values</li>
+                <li>1/n: Reciprocal values (if A is 5x more important than B, then B is 1/5 as important as A)</li>
+            </ul>
+        </div>
+
+        <!-- Stored Matrix Display -->
+        {% if job.ahp_priority %}
+        <div class="mb-6">
+            <h3 class="text-md font-medium text-gray-700 mb-2">Current Pairwise Comparison Matrix</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 border">
+                    <thead>
+                        <tr>
+                            <th class="px-4 py-2 bg-gray-50 text-xs text-gray-500"></th>
+                            {% for name in job.ahp_priority.criteria_names %}
+                                <th class="px-4 py-2 bg-gray-50 text-xs text-gray-500">{{ name }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for row_name in job.ahp_priority.criteria_names %}
+                            <tr>
+                                <td class="px-4 py-2 whitespace-nowrap text-xs font-medium text-gray-700 bg-gray-50">{{ row_name }}</td>
+                                {% with row_idx=forloop.counter0 %}
+                                    {% for col_name in job.ahp_priority.criteria_names %}
+                                        {% with col_idx=forloop.counter0 %}
+                                            <td class="px-4 py-2 whitespace-nowrap text-xs text-center text-gray-600">
+                                                {% with value=job.ahp_priority.matrix_data|index:row_idx|index:col_idx %}
+                                                    {% if value < 1 %}
+                                                        {% if value|floatformat:4 == '0.3333' or value|floatformat:4 == '0.3334' %}
+                                                            1/3
+                                                        {% elif value|floatformat:4 == '0.2000' %}
+                                                            1/5
+                                                        {% elif value|floatformat:4 == '0.1429' or value|floatformat:4 == '0.1428' %}
+                                                            1/7
+                                                        {% elif value|floatformat:4 == '0.1111' or value|floatformat:4 == '0.1112' %}
+                                                            1/9
+                                                        {% elif value|floatformat:1 == '0.5' %}
+                                                            1/2
+                                                        {% elif value|floatformat:1 == '0.3' %}
+                                                            1/3
+                                                        {% elif value|floatformat:1 == '0.2' %}
+                                                            1/5
+                                                        {% elif value|floatformat:1 == '0.1' %}
+                                                            1/9
+                                                        {% else %}
+                                                            {{ value|floatformat:2 }}
+                                                        {% endif %}
+                                                    {% else %}
+                                                        {{ value|floatformat:0 }}
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </td>
+                                        {% endwith %}
+                                    {% endfor %}
+                                {% endwith %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <form method="post" id="ahp-form">
+            {% csrf_token %}
+            
+            <!-- Table Matrix UI -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 border">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Criteria</th>
+                            {% for _, name in criteria %}
+                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ name }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for i_id, i_name in criteria %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 bg-gray-50">{{ i_name }}</td>
+                            {% for j_id, j_name in criteria %}
+                                {% if forloop.counter0 == forloop.parentloop.counter0 %}
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 bg-gray-100">1</td>
+                                {% elif forloop.counter0 > forloop.parentloop.counter0 %}
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 bg-gray-100">
+                                        <span class="reciprocal-cell" data-primary-field="{{ j_id }}__{{ i_id }}"></span>
+                                    </td>
+                                {% else %}
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {% if j_id != i_id %}
+                                            {% with field_name=i_id|add:'__'|add:j_id %}
+                                                <select name="{{ field_name }}" id="id_{{ field_name }}" class="comparison-select border-gray-300 focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm rounded-md" data-reciprocal-id="{{ j_id }}__{{ i_id }}">
+                                                    <option value="1" {% if form.initial.field_name == "1" %}selected{% endif %}>1</option>
+                                                    <option value="2" {% if form.initial.field_name == "2" %}selected{% endif %}>2</option>
+                                                    <option value="3" {% if form.initial.field_name == "3" %}selected{% endif %}>3</option>
+                                                    <option value="4" {% if form.initial.field_name == "4" %}selected{% endif %}>4</option>
+                                                    <option value="5" {% if form.initial.field_name == "5" %}selected{% endif %}>5</option>
+                                                    <option value="6" {% if form.initial.field_name == "6" %}selected{% endif %}>6</option>
+                                                    <option value="7" {% if form.initial.field_name == "7" %}selected{% endif %}>7</option>
+                                                    <option value="8" {% if form.initial.field_name == "8" %}selected{% endif %}>8</option>
+                                                    <option value="9" {% if form.initial.field_name == "9" %}selected{% endif %}>9</option>
+                                                    <option value="1/2" {% if form.initial.field_name == "1/2" %}selected{% endif %}>1/2</option>
+                                                    <option value="1/3" {% if form.initial.field_name == "1/3" %}selected{% endif %}>1/3</option>
+                                                    <option value="1/4" {% if form.initial.field_name == "1/4" %}selected{% endif %}>1/4</option>
+                                                    <option value="1/5" {% if form.initial.field_name == "1/5" %}selected{% endif %}>1/5</option>
+                                                    <option value="1/6" {% if form.initial.field_name == "1/6" %}selected{% endif %}>1/6</option>
+                                                    <option value="1/7" {% if form.initial.field_name == "1/7" %}selected{% endif %}>1/7</option>
+                                                    <option value="1/8" {% if form.initial.field_name == "1/8" %}selected{% endif %}>1/8</option>
+                                                    <option value="1/9" {% if form.initial.field_name == "1/9" %}selected{% endif %}>1/9</option>
+                                                </select>
+                                            {% endwith %}
+                                        {% endif %}
+                                    </td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-6 text-center">
+                <button type="submit" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+                    Check Consistency & Save
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if weights_display %}
+<div class="mt-6 bg-white shadow overflow-hidden sm:rounded-lg">
+    <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">Current Priority Weights</h3>
+        <p class="mt-1 max-w-2xl text-sm text-gray-500">
+            Weights show the relative importance of each criterion
+        </p>
+    </div>
+    
+    <div class="border-t border-gray-200">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead>
+                <tr>
+                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Criterion</th>
+                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Weight</th>
+                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for name, weight in weights_display %}
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ name }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ weight|floatformat:1 }}%</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ weight }}%"></div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock main_content %}
+
+{% block script %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-fill reciprocal values
+    const comparisonSelects = document.querySelectorAll('.comparison-select');
+    
+    comparisonSelects.forEach(select => {
+        // Set initial reciprocal value
+        const reciprocalId = select.dataset.reciprocalId;
+        const reciprocalCell = document.querySelector(`.reciprocal-cell[data-primary-field="${reciprocalId}"]`);
+        
+        // Initialize with reciprocal of current value
+        updateReciprocal(select.value, reciprocalCell);
+        
+        // Update whenever selection changes
+        select.addEventListener('change', function() {
+            updateReciprocal(this.value, reciprocalCell);
+        });
+    });
+    
+    function updateReciprocal(value, reciprocalCell) {
+        if (!reciprocalCell) return;
+        
+        let reciprocalValue;
+        if (value.includes('/')) {
+            // If it's already a fraction like 1/3, the reciprocal is 3
+            const parts = value.split('/');
+            reciprocalValue = parts[1];
+        } else {
+            // If it's a whole number like 5, the reciprocal is 1/5
+            reciprocalValue = `1/${value}`;
+        }
+        
+        reciprocalCell.textContent = reciprocalValue;
+    }
+});
+</script>
+{% endblock script %}
