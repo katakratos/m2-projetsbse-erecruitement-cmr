@@ -271,3 +271,9 @@ dmypy.json
 .vscode/
 *.db
 poetry.lock
+
+# Ignore everything in media/
+media/*
+
+# But keep the .gitkeep file
+!media/.gitkeep
