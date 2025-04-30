@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
         <!-- Basic Page Info -->
         <meta charset="utf-8" />
@@ -13,36 +13,82 @@
             name="viewport"
             content="width=device-width, initial-scale=1, maximum-scale=1"
         />
+        <meta name="description" content="Modern recruitment platform for employers and job seekers">
+        <meta name="theme-color" content="#3B82F6">
 
+        <!-- Favicon -->
         <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon_io/apple-touch-icon.png' %}">
         <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon_io/favicon-32x32.png' %}">
         <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon_io/favicon-16x16.png' %}">
         <link rel="manifest" href="/site.webmanifest">
 
         <!-- Google Font -->
-        <link
-            href="{% static 'css/fonts.css' %}"
-            rel="stylesheet"
-        />
-        <!-- CSS -->
+        <link href="{% static 'css/fonts.css' %}" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
         
-        {% comment %} <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp,container-queries"></script> {% endcomment %}
+        <!-- CSS -->
         <script src="{% static 'js/tailwindcdn.es' %}"></script>
         <script src="{% static 'js/tailwindcss.js' %}"></script>
-            <script src="{% static 'js/alpine.cdn.min.js' %}"></script>
+        <script src="{% static 'js/alpine.cdn.min.js' %}" defer></script>
         <script src="{% static 'js/htmx.min.js' %}"></script>
+        
+        <!-- Animation Libraries -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+        <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+        <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+        
+        <!-- Icons -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
+        <style>
+            :root {
+                --primary: #3B82F6;
+                --primary-dark: #2563EB;
+                --secondary: #10B981;
+                --dark: #1F2937;
+                --light: #F9FAFB;
+            }
+            body {
+                font-family: 'Inter', sans-serif;
+            }
+            .animate-fade-in {
+                animation: fadeIn 0.5s ease-in;
+            }
+            .animate-slide-up {
+                animation: slideUp 0.5s ease-out;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            @keyframes slideUp {
+                from { transform: translateY(20px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+        </style>
 
         {% block seo %}{% endblock seo %}
-
         {% block styles %}{% endblock styles %}
-
     </head>
     <body>
+        <div class="animate-fade-in">
+            {% block content %}{% endblock content %}
+        </div>
         
-        {% block content %}{% endblock content %}
         {% block script %}{% endblock script %}
-        <!-- JS -->
         
+        <!-- JS -->
+        <script>
+            // Initialize AOS animation library
+            document.addEventListener('DOMContentLoaded', function() {
+                AOS.init({
+                    duration: 800,
+                    easing: 'ease-in-out',
+                    once: true
+                });
+            });
+        </script>
     </body>
 </html>

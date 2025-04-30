@@ -16,4 +16,5 @@ urlpatterns = [
     path('<int:job_id>/processing-status/', views.ApplicationProcessingStatusView.as_view(), name='processing_status'),
     path('<int:job_id>/rank-candidates/', views.RankCandidatesAHPView.as_view(), name='rank_candidates'),
     path('<int:job_id>/genetic-team/', views.GeneticTeamView.as_view(), name='genetic_team'),
+    path('job/<int:job_id>/update-application-status/', views.update_application_status, name='update_application_status'),
 ]

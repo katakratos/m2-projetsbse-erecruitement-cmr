@@ -4,24 +4,56 @@ from users.models import Employer, JobSeeker
 
 
 class Job(models.Model):
+    JOB_TYPE_CHOICES = [
+        ('Full-time', 'Full time'),
+        ('Part-time', 'Part time'),
+        ('Internship', 'Internship'),
+        ('Project', 'Project work'),
+        ('Volunteering', 'Volunteering'),
+    ]
+    
+    EXPERIENCE_CHOICES = [
+        ('Entry', 'Entry level'),
+        ('Intermediate', 'Intermediate'),
+        ('Expert', 'Expert'),
+    ]
+    
+    EDUCATION_LEVEL_CHOICES = [
+        ('none', 'No formal education required'),
+        ('high_school', 'High School Diploma'),
+        ('certificate', 'Professional Certificate'),
+        ('associates', 'Associate\'s Degree'),
+        ('bachelors', 'Bachelor\'s Degree'),
+        ('masters', 'Master\'s Degree'),
+        ('doctorate', 'Doctorate/PhD'),
+        ('professional', 'Professional Degree (MD, JD, etc.)'),
+    ]
+    
     title = models.CharField(max_length=255)
     description = models.TextField()
     employer = models.ForeignKey(Employer, on_delete=models.CASCADE)
     nb_places = models.IntegerField(default=1)
     location = models.CharField(max_length=255)
-    type = models.CharField(max_length=50)
-    experience = models.CharField(max_length=50)
+    type = models.CharField(max_length=50, choices=JOB_TYPE_CHOICES, default='Full-time')
+    experience = models.CharField(max_length=50, choices=EXPERIENCE_CHOICES, default='Entry')
+    years_experience_required = models.PositiveIntegerField(default=0, help_text="Number of years of experience required for this job")
     salary = models.DecimalField(max_digits=10, decimal_places=2)
     deadline = models.DateField()
     requirements = models.TextField()
     skills = models.TextField()
+    remote_work = models.BooleanField(default=False, help_text="Can this job be done remotely?")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     # Basic criteria fields (these could be implemented as boolean fields for quick filtering)
     business_unit_flexibility = models.BooleanField(default=False, help_text="Ability to work in different business units")
     past_experience_required = models.BooleanField(default=False)
-    min_education_level = models.CharField(max_length=100, blank=True, null=True)
+    min_education_level = models.CharField(
+        max_length=100, 
+        choices=EDUCATION_LEVEL_CHOICES,
+        default='none',
+        help_text="Minimum required education level"
+    )
     foreign_language_required = models.BooleanField(default=False)
     strategic_thinking_required = models.BooleanField(default=False)
     oral_communication_required = models.BooleanField(default=False)
@@ -92,6 +124,9 @@ class CandidateData(models.Model):
     # Selection status
     is_selected = models.BooleanField(default=False, help_text="Indicates if the candidate has been selected for the position")
     selection_date = models.DateTimeField(null=True, blank=True, help_text="When the candidate was selected")
+    
+    # Penalization status
+    is_penalize = models.BooleanField(default=False, help_text="Indicates if the candidate is penalized for duplicate applications")
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

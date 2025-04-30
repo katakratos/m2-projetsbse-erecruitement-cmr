@@ -17,3 +17,16 @@ def index(value, arg):
         return value[arg]
     except (IndexError, KeyError, TypeError):
         return ''
+
+@register.filter(name='subtract')
+def subtract(value, arg):
+    """
+    Subtracts the arg from the value.
+    
+    Example:
+    {{ 5|subtract:2 }} will output 3
+    """
+    try:
+        return float(value) - float(arg)
+    except (ValueError, TypeError):
+        return 0

@@ -18,9 +18,11 @@ def get_candidate_data_for_job(job_id):
     
     names = []
     scores_array = []
+    jobseeker_ids = []  # Now also collect the jobseeker IDs
     
     for candidate in candidates:
         name = candidate.jobseeker.get_full_name()
+        jobseeker_id = candidate.jobseeker.id  # Get the jobseeker ID
         
         # Extract all the criteria scores
         criteria_scores = [
@@ -34,9 +36,10 @@ def get_candidate_data_for_job(job_id):
         ]
         
         names.append(name)
+        jobseeker_ids.append(jobseeker_id)  # Store the jobseeker ID
         scores_array.append(criteria_scores)
     
-    return names, np.array(scores_array)
+    return names, np.array(scores_array), jobseeker_ids  # Return jobseeker IDs as well
 
 def get_weights_from_ahp(job_id):
     """Get the weights from the AHP model for a job"""
@@ -56,7 +59,7 @@ class GeneticTeamOptimizer:
     def __init__(self, job_id, team_size):
         self.job_id = job_id
         self.team_size = team_size
-        self.names, self.population = get_candidate_data_for_job(job_id)
+        self.names, self.population, self.jobseeker_ids = get_candidate_data_for_job(job_id)  # Get jobseeker IDs
         self.weights = get_weights_from_ahp(job_id)
         self.num_criteria = len(self.weights)
         
@@ -218,6 +221,7 @@ class GeneticTeamOptimizer:
             
         team_indices = self.get_candidate_indices(self.best_solution)
         team_members = []
+        jobseeker_ids = []  # List to collect all jobseeker IDs
         
         # Build team information
         for i, idx in enumerate(team_indices):
@@ -226,6 +230,10 @@ class GeneticTeamOptimizer:
             
             optimized_scores = self.best_solution[start_idx:end_idx]
             original_scores = self.population[idx]
+            
+            # Get jobseeker ID and add to list
+            jobseeker_id = self.jobseeker_ids[idx]
+            jobseeker_ids.append(jobseeker_id)
             
             # Calculate improvements for each criterion
             improvements = []
@@ -244,6 +252,7 @@ class GeneticTeamOptimizer:
             
             team_members.append({
                 'name': self.names[idx],
+                'jobseeker_id': self.jobseeker_ids[idx],
                 'original_scores': [round(score, 2) for score in original_scores],
                 'optimized_scores': [round(score, 2) for score in optimized_scores],
                 'original_weighted': round(original_weighted, 2),
@@ -258,6 +267,7 @@ class GeneticTeamOptimizer:
         result = {
             'team_size': self.team_size,
             'team_members': team_members,
+            'team_member_ids': jobseeker_ids,  # Add consolidated list of IDs
             'total_score': round(self.best_fitness, 2),
             'criteria_names': [
                 'Business Unit Flexibility',

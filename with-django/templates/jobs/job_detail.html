@@ -1,239 +1,277 @@
 {% extends "base.html" %}
 {% load static %}
+{% load humanize %}
 
 {% block main_content %}
-<div class="bg-white shadow overflow-hidden sm:rounded-lg">
-    <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
-        <div>
-            <h1 class="text-xl font-medium text-gray-900">{{ job.title }}</h1>
-            <p class="mt-1 max-w-2xl text-sm text-gray-500">{{ job.employer.company_name }}</p>
-        </div>
-        <div class="flex space-x-3">
-            {% if user.is_authenticated %}
-                {% if user.employer == job.employer %}
-                    <!-- Employer actions -->
-                    <a href="{% url 'job_update' job.id %}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
-                        Edit Job
-                    </a>
-                    <a href="{% url 'add_criteria' job.id %}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700">
-                        Manage Criteria
-                    </a>
-                    <a href="{% url 'ahp_matrix' job.id %}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
-                        Set Priorities
-                    </a>
-                    
-                    <!-- Application processing and results buttons -->
-                    <div class="border-l border-gray-300 h-8 mx-1"></div>
-                    
-                    <a href="{% url 'process_applications' job.id %}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-emerald-600 hover:bg-emerald-700">
-                        <svg class="mr-1.5 -ml-0.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        Process Applications
-                    </a>
-                    
-                    <a href="{% url 'view_candidate_results' job.id %}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                        <svg class="mr-1.5 -ml-0.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
-                        View Results
-                    </a>
-                    
-                    <a href="{% url 'rank_candidates' job.id %}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-amber-600 hover:bg-amber-700">
-                        <svg class="mr-1.5 -ml-0.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"></path>
-                        </svg>
-                        Rank Candidates
-                    </a>
-                {% elif user.jobseeker %}
-                    <!-- Job seeker actions -->
-                    {% if has_applied %}
-                        <span class="inline-flex items-center px-3 py-2 border border-green-300 text-sm leading-4 font-medium rounded-md text-green-700 bg-green-50">
-                            <svg class="mr-1.5 -ml-0.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            Applied
-                        </span>
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="bg-white shadow-xl rounded-lg overflow-hidden border border-gray-100">
+        <!-- Header Section -->
+        <div class="px-6 py-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-full bg-blue-800 opacity-10 transform -skew-y-3 z-0"></div>
+            <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold mb-1">{{ job.title }}</h1>
+                    <p class="text-blue-100 flex items-center text-lg">
+                        <i class="fas fa-building mr-2 opacity-80"></i> {{ job.employer.company_name|default:"A Reputable Company" }}
+                    </p>
+                </div>
+                <div class="flex flex-wrap gap-3 md:justify-end mt-4 md:mt-0">
+                    {% if user.is_authenticated %}
+                        {% if user.employer == job.employer %}
+                            <!-- Employer Actions -->
+                            <div class="flex flex-wrap gap-2">
+                                <a href="{% url 'job_update' job.id %}" class="btn-animate inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-blue-700 bg-white hover:bg-blue-50 transition-all">
+                                    <i class="fas fa-edit mr-1.5"></i> Edit Job
+                                </a>
+                                <a href="{% url 'add_criteria' job.id %}" class="btn-animate inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 transition-all">
+                                    <i class="fas fa-list-check mr-1.5"></i> Manage Criteria
+                                </a>
+                                <a href="{% url 'ahp_matrix' job.id %}" class="btn-animate inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition-all">
+                                    <i class="fas fa-balance-scale mr-1.5"></i> Set Priorities
+                                </a>
+                            </div>
+                            <div class="border-l border-white/30 h-8 mx-1 hidden md:block"></div>
+                            <div class="flex flex-wrap gap-2">
+                                <a href="{% url 'process_applications' job.id %}" class="btn-animate inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 transition-all">
+                                    <i class="fas fa-play-circle mr-1.5"></i> Process Apps
+                                </a>
+                                <a href="{% url 'view_candidate_results' job.id %}" class="btn-animate inline-flex items-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md text-white bg-white/20 hover:bg-white/30 transition-all">
+                                    <i class="fas fa-chart-bar mr-1.5"></i> View Results
+                                </a>
+                                <a href="{% url 'rank_candidates' job.id %}" class="btn-animate inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-amber-600 hover:bg-amber-700 transition-all">
+                                    <i class="fas fa-sort-amount-down mr-1.5"></i> Rank Candidates
+                                </a>
+                            </div>
+                        {% elif user.jobseeker %}
+                            <!-- Job Seeker Actions -->
+                            <div>
+                                {% if has_applied %}
+                                    {% if application_status == 'selected' %}
+                                    <span class="inline-flex items-center px-4 py-2 border border-blue-300 text-sm font-medium rounded-md text-blue-800 bg-blue-100 shadow-sm">
+                                        <i class="fas fa-check-double mr-2"></i> Accepted
+                                    </span>
+                                    {% else %}
+                                    <span class="inline-flex items-center px-4 py-2 border border-green-300 text-sm font-medium rounded-md text-green-800 bg-green-100 shadow-sm">
+                                        <i class="fas fa-check-circle mr-2"></i> Applied
+                                    </span>
+                                    {% endif %}
+                                {% else %}
+                                    <a href="{% url 'apply_for_job' job.id %}" class="btn-animate inline-flex items-center px-5 py-2.5 border border-transparent text-base font-medium rounded-md shadow-lg text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105">
+                                        <i class="fas fa-paper-plane mr-2"></i> Apply Now
+                                    </a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
                     {% else %}
-                        <a href="{% url 'apply_for_job' job.id %}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700">
-                            Apply Now
+                        <a href="{% url 'login' %}?next={{ request.path }}" class="btn-animate inline-flex items-center px-5 py-2.5 border border-transparent text-base font-medium rounded-md shadow-lg text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105">
+                            <i class="fas fa-sign-in-alt mr-2"></i> Login to Apply
                         </a>
                     {% endif %}
-                {% endif %}
-            {% else %}
-                <a href="{% url 'login' %}?next={{ request.path }}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700">
-                    Login to Apply
-                </a>
-            {% endif %}
+                </div>
+            </div>
         </div>
-    </div>
-    
-    <!-- Job details section -->
-    <div class="border-t border-gray-200">
-        <dl>
-            <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt class="text-sm font-medium text-gray-500">Location</dt>
-                <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ job.location }}</dd>
+
+        <!-- Job Overview Info Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 p-6 bg-gray-50 border-b border-gray-200">
+            {% with icon_class="w-6 h-6" text_class="text-sm" title_class="text-xs text-gray-500 uppercase" value_class="font-semibold text-gray-800" card_class="bg-white rounded-lg p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all flex items-center space-x-3" icon_bg="p-2 rounded-full" %}
+            <div class="{{ card_class }}">
+                <div class="{{ icon_bg }} bg-blue-100 text-blue-600"><i class="fas fa-map-marker-alt {{ icon_class }}"></i></div>
+                <div>
+                    <div class="{{ title_class }}">Location</div>
+                    <div class="{{ value_class }}">{{ job.location }}</div>
+                </div>
             </div>
-            <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt class="text-sm font-medium text-gray-500">Job Type</dt>
-                <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ job.type }}</dd>
+            <div class="{{ card_class }}">
+                <div class="{{ icon_bg }} bg-purple-100 text-purple-600"><i class="fas fa-briefcase {{ icon_class }}"></i></div>
+                <div>
+                    <div class="{{ title_class }}">Job Type</div>
+                    <div class="{{ value_class }}">{{ job.get_type_display }}</div>
+                </div>
             </div>
-            <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt class="text-sm font-medium text-gray-500">Experience</dt>
-                <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ job.experience }}</dd>
+            <div class="{{ card_class }}">
+                <div class="{{ icon_bg }} bg-green-100 text-green-600"><i class="fas fa-dollar-sign {{ icon_class }}"></i></div>
+                <div>
+                    <div class="{{ title_class }}">Salary</div>
+                    <div class="{{ value_class }}">{% if job.salary %}XAF {{ job.salary|intcomma }}{% else %}Negotiable{% endif %}</div>
+                </div>
             </div>
-            <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt class="text-sm font-medium text-gray-500">Salary</dt>
-                <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">${{ job.salary }}</dd>
+            <div class="{{ card_class }}">
+                <div class="{{ icon_bg }} bg-red-100 text-red-600"><i class="fas fa-calendar-alt {{ icon_class }}"></i></div>
+                <div>
+                    <div class="{{ title_class }}">Apply By</div>
+                    <div class="{{ value_class }}">{{ job.deadline|date:"M d, Y" }}</div>
+                </div>
             </div>
-            <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt class="text-sm font-medium text-gray-500">Application Deadline</dt>
-                <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ job.deadline }}</dd>
-            </div>
-            <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt class="text-sm font-medium text-gray-500">Number of Positions</dt>
-                <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ job.nb_places }}</dd>
-            </div>
-            <div class="bg-gray-50 px-4 py-5 sm:px-6">
-                <dt class="text-sm font-medium text-gray-500">Description</dt>
-                <dd class="mt-1 text-sm text-gray-900">{{ job.description|linebreaks }}</dd>
-            </div>
-            <div class="bg-white px-4 py-5 sm:px-6">
-                <dt class="text-sm font-medium text-gray-500">Requirements</dt>
-                <dd class="mt-1 text-sm text-gray-900">{{ job.requirements|linebreaks }}</dd>
-            </div>
-            <div class="bg-gray-50 px-4 py-5 sm:px-6">
-                <dt class="text-sm font-medium text-gray-500">Skills</dt>
-                <dd class="mt-1 text-sm text-gray-900">{{ job.skills|linebreaks }}</dd>
-            </div>
-            
-            <!-- New section for built-in criteria -->
-            <div class="bg-white px-4 py-5 sm:px-6">
-                <dt class="text-sm font-medium text-gray-500">Job Criteria</dt>
-                <dd class="mt-4">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {% if job.min_education_level %}
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0 h-5 w-5 text-green-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <p class="ml-2 text-sm text-gray-700">
-                                <span class="font-medium text-gray-900">Minimum Education:</span> {{ job.min_education_level }}
-                            </p>
+            {% endwith %}
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="p-6 md:p-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left Column: Job Details -->
+                <div class="lg:col-span-2 space-y-8">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800 flex items-center mb-4 pb-2 border-b border-gray-200">
+                            <i class="fas fa-info-circle mr-2 text-blue-600"></i> Job Description
+                        </h3>
+                        <div class="prose prose-blue max-w-none text-gray-700">
+                            {{ job.description|linebreaks }}
                         </div>
-                        {% endif %}
-                        
-                        {% if job.business_unit_flexibility %}
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0 h-5 w-5 text-green-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <p class="ml-2 text-sm text-gray-700">
-                                <span class="font-medium text-gray-900">Business Unit Flexibility:</span> Required
-                            </p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800 flex items-center mb-4 pb-2 border-b border-gray-200">
+                            <i class="fas fa-clipboard-list mr-2 text-blue-600"></i> Requirements
+                        </h3>
+                        <div class="prose prose-blue max-w-none text-gray-700">
+                            {{ job.requirements|linebreaks }}
                         </div>
-                        {% endif %}
-                        
-                        {% if job.past_experience_required %}
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0 h-5 w-5 text-green-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <p class="ml-2 text-sm text-gray-700">
-                                <span class="font-medium text-gray-900">Prior Experience:</span> Required
-                            </p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800 flex items-center mb-4 pb-2 border-b border-gray-200">
+                            <i class="fas fa-star mr-2 text-blue-600"></i> Skills
+                        </h3>
+                        <div class="prose prose-blue max-w-none text-gray-700">
+                            {{ job.skills|linebreaks }}
                         </div>
-                        {% endif %}
-                        
-                        {% if job.foreign_language_required %}
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0 h-5 w-5 text-green-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <p class="ml-2 text-sm text-gray-700">
-                                <span class="font-medium text-gray-900">Foreign Language:</span> Required
-                            </p>
+                    </div>
+                    <div class="flex items-center mt-2">
+                        <div class="mr-2 text-gray-500">
+                            <i class="far fa-clock"></i>
                         </div>
-                        {% endif %}
-                        
-                        {% if job.strategic_thinking_required %}
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0 h-5 w-5 text-green-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <p class="ml-2 text-sm text-gray-700">
-                                <span class="font-medium text-gray-900">Strategic Thinking:</span> Required
-                            </p>
+                        <div>
+                            <span class="font-medium text-gray-900">Experience Required:</span>
+                            {% if job.years_experience_required > 0 %}
+                                <span class="ml-1 text-gray-700">{{ job.years_experience_required }} year{% if job.years_experience_required != 1 %}s{% endif %}</span>
+                            {% else %}
+                                <span class="ml-1 text-gray-700">No specific experience requirement</span>
+                            {% endif %}
                         </div>
-                        {% endif %}
-                        
-                        {% if job.oral_communication_required %}
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0 h-5 w-5 text-green-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
+                    </div>
+                </div>
+
+                <!-- Right Column: Metadata & Criteria -->
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="bg-gray-50 rounded-lg p-6 shadow-sm border border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+                            Quick Overview
+                        </h3>
+                        <dl class="space-y-4">
+                            <div class="flex items-center">
+                                <dt class="text-sm font-medium text-gray-500 w-2/5 flex items-center"><i class="fas fa-user-clock mr-2 text-gray-400 fa-fw"></i>Experience</dt>
+                                <dd class="text-sm text-gray-800 font-semibold">{{ job.get_experience_display }}</dd>
                             </div>
-                            <p class="ml-2 text-sm text-gray-700">
-                                <span class="font-medium text-gray-900">Oral Communication:</span> Required
-                            </p>
+                            <div class="flex items-center">
+                                <dt class="text-sm font-medium text-gray-500 w-2/5 flex items-center"><i class="fas fa-users mr-2 text-gray-400 fa-fw"></i>Positions</dt>
+                                <dd class="text-sm text-gray-800 font-semibold">{{ job.nb_places }}</dd>
+                            </div>
+                            <div class="flex items-center">
+                                <dt class="text-sm font-medium text-gray-500 w-2/5 flex items-center"><i class="fas fa-calendar-check mr-2 text-gray-400 fa-fw"></i>Apply By</dt>
+                                <dd class="text-sm text-gray-800 font-semibold">{{ job.deadline|date:"M d, Y" }}</dd>
+                            </div>
+                             <div class="flex items-center">
+                                <dt class="text-sm font-medium text-gray-500 w-2/5 flex items-center"><i class="far fa-clock mr-2 text-gray-400 fa-fw"></i>Posted</dt>
+                                <dd class="text-sm text-gray-800 font-semibold">{{ job.created_at|timesince }} ago</dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-lg p-6 shadow-sm border border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
+                            <i class="fas fa-tasks mr-2 text-blue-600"></i> Evaluation Criteria
+                        </h3>
+                        <div class="space-y-3">
+                            {% with check_icon="<i class='fas fa-check-circle text-green-500 mr-2'></i>" label_class="font-medium text-gray-800" value_class="text-gray-600" %}
+                                {% if job.min_education_level %}
+                                <div class="flex items-start text-sm">
+                                    {{ check_icon|safe }}
+                                    <p><span class="{{ label_class }}">Min Education:</span> <span class="{{ value_class }}">{{ job.get_min_education_level_display }}</span></p>
+                                </div>
+                                {% endif %}
+                                {% if job.business_unit_flexibility %}
+                                <div class="flex items-start text-sm">
+                                    {{ check_icon|safe }}
+                                    <p><span class="{{ label_class }}">Business Unit Flexibility:</span> <span class="{{ value_class }}">Required</span></p>
+                                </div>
+                                {% endif %}
+                                {% if job.past_experience_required %}
+                                <div class="flex items-start text-sm">
+                                    {{ check_icon|safe }}
+                                    <p><span class="{{ label_class }}">Prior Experience:</span> <span class="{{ value_class }}">Required</span></p>
+                                </div>
+                                {% endif %}
+                                {% if job.foreign_language_required %}
+                                <div class="flex items-start text-sm">
+                                    {{ check_icon|safe }}
+                                    <p><span class="{{ label_class }}">Foreign Language:</span> <span class="{{ value_class }}">Required</span></p>
+                                </div>
+                                {% endif %}
+                                {% if job.strategic_thinking_required %}
+                                <div class="flex items-start text-sm">
+                                    {{ check_icon|safe }}
+                                    <p><span class="{{ label_class }}">Strategic Thinking:</span> <span class="{{ value_class }}">Required</span></p>
+                                </div>
+                                {% endif %}
+                                {% if job.oral_communication_required %}
+                                <div class="flex items-start text-sm">
+                                    {{ check_icon|safe }}
+                                    <p><span class="{{ label_class }}">Oral Communication:</span> <span class="{{ value_class }}">Required</span></p>
+                                </div>
+                                {% endif %}
+                                {% if job.computer_skills_required %}
+                                <div class="flex items-start text-sm">
+                                    {{ check_icon|safe }}
+                                    <p><span class="{{ label_class }}">Computer Skills:</span> <span class="{{ value_class }}">Required</span></p>
+                                </div>
+                                {% endif %}
+                            {% endwith %}
                         </div>
-                        {% endif %}
-                        
-                        {% if job.computer_skills_required %}
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0 h-5 w-5 text-green-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <p class="ml-2 text-sm text-gray-700">
-                                <span class="font-medium text-gray-900">Computer Skills:</span> Required
-                            </p>
+
+                        {% if criteria %}
+                        <div class="mt-5 pt-4 border-t border-gray-200">
+                            <h4 class="font-semibold text-gray-800 mb-2 text-sm">Additional Criteria:</h4>
+                            <ul class="space-y-2">
+                                {% for criterion in criteria %}
+                                <li class="flex items-center text-sm text-gray-700">
+                                    <i class="fas fa-angle-right text-blue-500 mr-2 fa-fw"></i>
+                                    {{ criterion.criteria }}
+                                </li>
+                                {% endfor %}
+                            </ul>
                         </div>
                         {% endif %}
                     </div>
-                </dd>
+                </div>
             </div>
-            <!-- End built-in criteria section -->
-            
-            {% if criteria %}
-            <div class="bg-gray-50 px-4 py-5 sm:px-6">
-                <dt class="text-sm font-medium text-gray-500">Additional Criteria</dt>
-                <dd class="mt-2">
-                    <ul class="border border-gray-200 rounded-md divide-y divide-gray-200">
-                        {% for criterion in criteria %}
-                        <li class="pl-3 pr-4 py-3 flex items-center justify-between text-sm">
-                            <div class="w-0 flex-1 flex items-center">
-                                <span class="ml-2 flex-1 w-0 truncate">{{ criterion.criteria }}</span>
-                            </div>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </dd>
-            </div>
-            {% endif %}
-        </dl>
+        </div>
+
+        <!-- Floating Apply Button for Job Seekers (if not applied) -->
+        {% if user.is_authenticated and user.jobseeker and not has_applied %}
+        <div class="sticky bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 shadow-lg md:hidden z-20">
+            <a href="{% url 'apply_for_job' job.id %}" class="btn-animate w-full inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-lg text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 transition-all">
+                <i class="fas fa-paper-plane mr-2"></i> Apply Now
+            </a>
+        </div>
+        {% endif %}
     </div>
 </div>
+{% endblock %}
 
-{% if user.is_authenticated and user.jobseeker and not has_applied %}
-<div class="mt-6 text-center">
-    <a href="{% url 'apply_for_job' job.id %}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
-        Apply for this Job
-    </a>
-</div>
-{% endif %}
+{% block script %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add button click effects
+    const buttons = document.querySelectorAll('.btn-animate');
+    buttons.forEach(button => {
+        button.addEventListener('mousedown', function() {
+            this.classList.add('scale-95');
+        });
+        button.addEventListener('mouseup', function() {
+            this.classList.remove('scale-95');
+        });
+        button.addEventListener('mouseleave', function() {
+            this.classList.remove('scale-95');
+        });
+    });
+});
+</script>
 {% endblock %}

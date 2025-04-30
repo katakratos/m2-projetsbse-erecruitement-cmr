@@ -9,11 +9,16 @@ def cv_upload_path(instance, filename):
     return f'data/{instance.jobseeker.id}/{filename}'
 
 class Application(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('selected', 'Selected'),
+        ('rejected', 'Rejected'),
+    )
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='applications')
     jobseeker = models.ForeignKey(JobSeeker, on_delete=models.CASCADE, related_name='applications')
     cv = models.FileField(upload_to=cv_upload_path)
     date_applied = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=50, default='pending')
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='pending')
     
     def __str__(self):
         return f"{self.jobseeker.get_full_name()} - {self.job.title}"

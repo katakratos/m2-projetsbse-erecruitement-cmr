@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block main_content %}
+<div class="max-w-4xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Profile Settings</h1>
+        <p class="text-gray-600">Update your personal information and password</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Sidebar with user info -->
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 lg:col-span-1">
+            <div class="flex flex-col items-center">
+                <div class="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-4xl font-bold mb-4">
+                    {{ user.username|first|upper }}
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800">{{ user.get_full_name|default:user.username }}</h3>
+                <p class="text-gray-500 mb-1">{{ user.email }}</p>
+                <p class="text-sm text-gray-400 mb-6">
+                    {% if user_type == 'jobseeker' %}
+                        Job Seeker
+                    {% elif user_type == 'employer' %}
+                        Employer
+                    {% endif %}
+                </p>
+                
+                {% if user_type == 'employer' %}
+                <div class="w-full border-t border-gray-200 pt-4 mb-4">
+                    <h4 class="font-semibold text-gray-700 mb-2">Company</h4>
+                    <p class="text-gray-600">{{ user.employer.company_name|default:"Not specified" }}</p>
+                </div>
+                {% endif %}
+
+                <div class="w-full border-t border-gray-200 pt-4 mb-4">
+                    <h4 class="font-semibold text-gray-700 mb-2">Account Created</h4>
+                    <p class="text-gray-600">{{ user.date_joined|date:"M d, Y" }}</p>
+                </div>
+
+                <div class="w-full border-t border-gray-200 pt-4">
+                    <h4 class="font-semibold text-gray-700 mb-2">Last Login</h4>
+                    <p class="text-gray-600">{{ user.last_login|date:"M d, Y" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Forms container -->
+        <div class="lg:col-span-2">
+            <!-- Profile information form -->
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-8">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Personal Information</h2>
+                <p class="text-gray-600 mb-6">Update your account's personal information</p>
+
+                <form method="post" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="update_type" value="profile">
+                    {{ form|crispy }}
+                    <div class="mt-6">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Password change form -->
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Change Password</h2>
+                <p class="text-gray-600 mb-6">Ensure your account is secure with a strong password</p>
+
+                <form method="post" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="update_type" value="password">
+                    {{ password_form|crispy }}
+                    <div class="mt-6">
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                            Update Password
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock main_content %}

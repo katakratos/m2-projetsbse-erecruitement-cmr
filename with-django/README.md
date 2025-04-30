@@ -16,14 +16,32 @@ This platform connects employers with job seekers, offering sophisticated tools 
 - **Team Optimization**: Genetic algorithm for optimal team composition
 - **Customizable Criteria**: Add, delete, and prioritize job criteria
 
-## Technology Stack
+## Technologies & Libraries
 
-- **Backend**: Django 5.2
-- **Frontend**: HTML, CSS, JavaScript, Tailwind CSS, HTMX, Alpine.js
-- **Database**: PostgreSQL
-- **Task Queue**: Celery with Redis
-- **Container**: Docker & Docker Compose
-- **AI Integration**: Google Gemini API for CV extraction
+### Backend
+- **Django 5.2**: Web framework for rapid development and clean, pragmatic design
+- **NumPy**: Scientific computing library used for matrix operations in AHP algorithm
+- **Celery**: Distributed task queue for handling asynchronous processing
+- **Redis**: Message broker for Celery and caching system
+- **PyPDF**: Library for reading and extracting text from PDF files
+- **Google Gemini API**: LLM for intelligent CV data extraction and analysis
+
+### Frontend
+- **Tailwind CSS**: Utility-first CSS framework for custom designs
+- **Alpine.js**: Lightweight JavaScript framework for component behavior
+- **HTMX**: Library for AJAX, CSS Transitions, WebSockets without writing JavaScript
+- **Django Templates**: Server-side template system
+
+### Data Science & Algorithms
+- **AHP (Analytic Hierarchy Process)**: Multi-criteria decision-making algorithm for candidate ranking
+- **Genetic Algorithm**: Evolutionary optimization for team selection
+- **Natural Language Processing**: For CV data extraction and skill matching
+- **Matplotlib**: For data visualization and analytics
+
+### DevOps
+- **Docker & Docker Compose**: Container platform for consistent development and deployment
+- **SQLite**: Lightweight database for development
+- **PostgreSQL**: Robust relational database for production
 
 ## Installation & Setup
 

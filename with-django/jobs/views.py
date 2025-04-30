@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.views import View
 from django.utils.decorators import method_decorator
 from .models import Job, Criteria, AHPPriority, CandidateData
+from applications.models import Application  # Fixed import - Application from applications app
 from .forms import JobForm, CriteriaForm, AHPMatrixForm
 from .ahp_utils import get_all_criteria, calculate_consistency_ratio, generate_consistent_ahp_matrix
 from users.models import Employer
@@ -11,15 +12,55 @@ import numpy as np
 import json
 from django.http import JsonResponse
 from .utils.ranking import recalculate_ahp_ranks_for_job
+from django.db import transaction
 # Import the Celery task
 from .tasks import process_job_applications_task
 # Add this import
 from .utils.genetic_algorithm import optimize_team_for_job
+from django.core.paginator import Paginator
+from .filters import JobFilter
 
 class JobListView(View):
     def get(self, request):
-        jobs = Job.objects.all().order_by('-created_at')
-        return render(request, 'jobs/job_list.html', {'jobs': jobs})
+        # Get all jobs
+        jobs = Job.objects.all()
+        
+        # Apply filters
+        job_filter = JobFilter(request.GET, queryset=jobs)
+        filtered_jobs = job_filter.qs
+        
+        # Calculate the total count before pagination
+        total_jobs_count = filtered_jobs.count()
+        
+        # Count for experience levels (for sidebar display)
+        entry_level_count = Job.objects.filter(experience='Entry').count()
+        intermediate_count = Job.objects.filter(experience='Intermediate').count()
+        expert_count = Job.objects.filter(experience='Expert').count()
+        
+        # Get selected filter values for maintaining state in template
+        selected_types = request.GET.getlist('type')
+        selected_experience = request.GET.getlist('experience')
+        
+        # Pagination
+        paginator = Paginator(filtered_jobs, 10)  # Show 10 jobs per page
+        page_number = request.GET.get('page', 1)
+        jobs_page = paginator.get_page(page_number)
+        
+        context = {
+            'jobs': jobs_page,
+            'jobs_count': total_jobs_count,  # Add this line to pass the total count
+            'job_filter': job_filter,
+            'selected_types': selected_types,
+            'selected_experience': selected_experience,
+            'entry_level_count': entry_level_count,
+            'intermediate_count': intermediate_count,
+            'expert_count': expert_count,
+            'is_paginated': paginator.num_pages > 1,
+            'paginator': paginator,
+            'page_obj': jobs_page,
+        }
+        
+        return render(request, 'jobs/job_list.html', context)
 
 class JobDetailView(View):
     def get(self, request, job_id):
@@ -28,8 +69,12 @@ class JobDetailView(View):
         
         # Check if logged in user has applied for this job
         has_applied = False
+        application_status = None
         if request.user.is_authenticated and hasattr(request.user, 'jobseeker'):
-            has_applied = job.applications.filter(jobseeker=request.user.jobseeker).exists()
+            application = job.applications.filter(jobseeker=request.user.jobseeker).first()
+            has_applied = application is not None
+            if has_applied:
+                application_status = application.status
             
         # Check for AHP priority weights
         weights_display = []
@@ -62,6 +107,7 @@ class JobDetailView(View):
             'criteria': criteria,
             'weights_display': weights_display,
             'has_applied': has_applied,
+            'application_status': application_status,
             'processing_status': processing_status
         })
 
@@ -385,7 +431,7 @@ class AHPMatrixView(View):
                         request.session[f'ahp_matrix_{job_id}'] = matrix.tolist()
                         
                         messages.warning(request, f"Your priority matrix is inconsistent (CR = {cr:.4f} > 0.1). Please review the suggested changes.")
-                        return redirect('ahp_matrix_suggestions', job_id=job.id)
+                        return redirect('ahp_matrix_suggestions', job_id=job_id)
                         
                 except Exception as e:
                     print(f"Error saving AHP Priority: {e}")
@@ -617,7 +663,7 @@ class AHPSuggestionsView(View):
             else:
                 messages.error(request, "Error: Generated matrix is not consistent. Please try again.")
         
-        return redirect('ahp_matrix', job_id=job.id)
+        return redirect('ahp_matrix', job_id=job_id)
 
 # Development/Testing view - restrict to superusers
 @method_decorator(user_passes_test(lambda u: u.is_superuser), name='dispatch')
@@ -905,7 +951,7 @@ class GeneticTeamView(View):
             optimized_team = optimize_team_for_job(job_id, team_size)
             if 'error' in optimized_team:
                 messages.error(request, f"Error in optimization: {optimized_team['error']}")
-                
+        print(optimized_team)
         return render(request, 'jobs/genetic_team.html', {
             'job': job,
             'candidate_count': candidate_count,
@@ -971,3 +1017,63 @@ class DeleteCriteriaView(View):
             messages.warning(request, "You've deleted a criterion that was part of your priority matrix. Please update your priorities.")
         
         return redirect('add_criteria', job_id=job_id)
+
+# Add this function to update application statuses based on genetic algorithm results
+@login_required
+def update_application_status(request, job_id):
+    """
+    Update application statuses based on genetic algorithm team selection.
+    Selected team members will have status set to 'selected', others to 'rejected'.
+    """
+    job = get_object_or_404(Job, pk=job_id)
+    
+    # Check permissions
+    if not hasattr(request.user, 'employer') or request.user.employer != job.employer:
+        messages.error(request, "You don't have permission to update applications for this job.")
+        return redirect('job_detail', job_id=job_id)
+        
+    if request.method == 'POST':
+        # Get the selected team members from the form
+        selected_members = request.POST.get('team_members', '').split(',')
+        
+        # Filter out empty strings and convert to integers
+        selected_member_ids = [int(id) for id in selected_members if id.strip()]
+        
+        if not selected_member_ids:
+            messages.error(request, "No team members were selected. Please run the genetic algorithm first.")
+            return redirect('genetic_team', job_id=job_id)
+        
+        # Get all applications for this job
+        applications = Application.objects.filter(job=job)
+        selected_count = 0
+        rejected_count = 0
+        
+        # Update statuses based on selection
+        with transaction.atomic():
+            for app in applications:
+                old_status = app.status
+                new_status = None
+                
+                # Check if this jobseeker's application is in the selected team
+                if app.jobseeker.id in selected_member_ids:
+                    new_status = 'selected'
+                    selected_count += 1
+                else:
+                    new_status = 'rejected'
+                    rejected_count += 1
+                
+                # Only update if status has changed
+                if old_status != new_status:
+                    app.status = new_status
+                    app.save(update_fields=['status'])  # Specify update_fields to fix signal issue
+        
+        messages.success(
+            request, 
+            f"Application statuses updated successfully: {selected_count} selected, {rejected_count} rejected."
+        )
+        
+        # Redirect to candidate results page
+        return redirect('view_candidate_results', job_id=job_id)
+    
+    # If not POST, redirect back to genetic team page
+    return redirect('genetic_team', job_id=job_id)

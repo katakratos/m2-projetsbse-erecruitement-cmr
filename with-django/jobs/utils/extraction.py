@@ -105,17 +105,35 @@ def evaluate_criteria(resume_data, job=None):
                     years = float(years_exp)
             else:
                 years = float(years_exp)
+            
+            # If job is provided, compare candidate's experience with required years
+            if job and hasattr(job, 'years_experience_required') and job.years_experience_required > 0:
+                job_required_years = job.years_experience_required
                 
-            if years > 10:
-                criteria["past_experience"] = 5
-            elif years >= 7:
-                criteria["past_experience"] = 4
-            elif years >= 5:
-                criteria["past_experience"] = 3
-            elif years >= 3:
-                criteria["past_experience"] = 2
-            elif years >= 1:
-                criteria["past_experience"] = 1
+                # Calculate score based on how candidate's experience compares to requirements
+                if years >= job_required_years * 1.5:  # Exceeds requirements by 50% or more
+                    criteria["past_experience"] = 5
+                elif years >= job_required_years * 1.2:  # Exceeds requirements by 20% or more
+                    criteria["past_experience"] = 4
+                elif years >= job_required_years:  # Meets requirements
+                    criteria["past_experience"] = 3
+                elif years >= job_required_years * 0.8:  # Within 20% of requirements
+                    criteria["past_experience"] = 2
+                elif years >= job_required_years * 0.5:  # At least half the required experience
+                    criteria["past_experience"] = 1
+            else:
+                # Use default scoring if no job-specific requirements
+                if years > 10:
+                    criteria["past_experience"] = 5
+                elif years >= 7:
+                    criteria["past_experience"] = 4
+                elif years >= 5:
+                    criteria["past_experience"] = 3
+                elif years >= 3:
+                    criteria["past_experience"] = 2
+                elif years >= 1:
+                    criteria["past_experience"] = 1
+                    
         except:
             # If parsing fails, estimate from number of experiences
             num_experiences = len(experiences)
@@ -133,24 +151,68 @@ def evaluate_criteria(resume_data, job=None):
     # C3: Level of study
     education = resume_data.get("education", [])
     highest_degree = 0
+    
+    # Define education level hierarchy for comparison
+    education_levels = {
+        'none': 0,
+        'high_school': 1,
+        'certificate': 2,
+        'associates': 3, 
+        'bachelors': 4,
+        'masters': 5,
+        'professional': 6,
+        'doctorate': 7
+    }
+    
+    # Map common degree terms to our standardized levels
+    degree_mapping = {
+        # Doctorate
+        'phd': 'doctorate', 'doctorate': 'doctorate', 'doctoral': 'doctorate',
+        # Masters
+        'master': 'masters', 'mba': 'masters', 'ms ': 'masters', 'ma ': 'masters',
+        # Bachelors
+        'bachelor': 'bachelors', 'bs ': 'bachelors', 'ba ': 'bachelors', 'bsc': 'bachelors',
+        # Associates
+        'associate': 'associates', 'diploma': 'associates',
+        # Certificate
+        'certificate': 'certificate',
+        # High School
+        'high school': 'high_school', 'secondary': 'high_school'
+    }
+    
+    # Determine candidate's highest education level
+    candidate_level = 'none'  # Default if no education found
     for edu in education:
         degree = edu.get("degree", "").lower()
-        # Assign value based on degree level
-        degree_value = 0
-        if "phd" in degree or "doctorate" in degree or "doctoral" in degree:
-            degree_value = 5
-        elif "master" in degree or "mba" in degree or "ms " in degree or "ma " in degree:
-            degree_value = 4
-        elif "bachelor" in degree or "bs " in degree or "ba " in degree or "bsc" in degree:
-            degree_value = 3
-        elif "associate" in degree or "diploma" in degree:
-            degree_value = 2
-        elif "certificate" in degree or "high school" in degree:
-            degree_value = 1
         
-        highest_degree = max(highest_degree, degree_value)
+        # Map the degree to our standardized levels
+        for key, value in degree_mapping.items():
+            if key in degree:
+                level = value
+                # Update if this is a higher level than previously found
+                if education_levels.get(level, 0) > education_levels.get(candidate_level, 0):
+                    candidate_level = level
     
-    criteria["education_level"] = highest_degree
+    # If job is provided, compare education levels
+    if job and job.min_education_level:
+        job_min_level = job.min_education_level
+        candidate_level_value = education_levels.get(candidate_level, 0)
+        job_level_value = education_levels.get(job_min_level, 0)
+        
+        # Score based on how candidate's education compares to requirements
+        if candidate_level_value >= job_level_value + 2:  # Far exceeds requirements
+            criteria["education_level"] = 5
+        elif candidate_level_value >= job_level_value + 1:  # Exceeds requirements
+            criteria["education_level"] = 4
+        elif candidate_level_value >= job_level_value:  # Meets requirements
+            criteria["education_level"] = 3
+        elif candidate_level_value >= job_level_value - 1:  # Just below requirements
+            criteria["education_level"] = 2
+        elif candidate_level_value >= 1:  # Has some education but below requirements
+            criteria["education_level"] = 1
+    else:
+        # Default scoring if no job-specific requirements
+        criteria["education_level"] = min(education_levels.get(candidate_level, 0), 5)
     
     # C4: Fluency in a foreign language (0 = None, 1 = Basic, 3 = Fluent, 5 = Bilingual)
     skills = resume_data.get("skills", [])
@@ -274,19 +336,47 @@ def evaluate_criteria(resume_data, job=None):
     
     basic_tech = ["excel", "word", "powerpoint", "outlook", "microsoft office"]
     
+    # If job is provided, get specific skills required for this job
+    job_specific_skills = []
+    if job and job.skills:
+        # Split job skills by comma and clean up each skill
+        job_specific_skills = [skill.strip().lower() for skill in job.skills.split(',')]
+        
+    # Count advanced, basic, and job-specific skills
     advanced_count = sum(1 for skill in tech_skills if any(adv in skill.lower() for adv in advanced_tech))
     basic_count = sum(1 for skill in tech_skills if any(basic in skill.lower() for basic in basic_tech))
     
-    if advanced_count > 3:
-        criteria["computer_skills"] = 5
-    elif advanced_count > 1 or (advanced_count > 0 and basic_count > 2):
-        criteria["computer_skills"] = 4
-    elif advanced_count > 0 or basic_count > 3:
-        criteria["computer_skills"] = 3
-    elif basic_count > 1:
-        criteria["computer_skills"] = 2
-    elif basic_count > 0:
-        criteria["computer_skills"] = 1
+    # Count job-specific skill matches
+    job_skill_matches = 0
+    if job_specific_skills:
+        # Count how many of the candidate's skills match the job requirements
+        job_skill_matches = sum(1 for skill in tech_skills if any(job_skill.lower() in skill.lower() for job_skill in job_specific_skills))
+    
+    # Adjust scoring to prioritize job-specific skill matches
+    if job_specific_skills and job_skill_matches > 0:
+        # Calculate match percentage (how many job skills the candidate has)
+        match_percentage = job_skill_matches / len(job_specific_skills) if len(job_specific_skills) > 0 else 0
+        
+        if match_percentage >= 0.8 or job_skill_matches >= 4:
+            criteria["computer_skills"] = 5  # Excellent match to job requirements
+        elif match_percentage >= 0.6 or job_skill_matches >= 3:
+            criteria["computer_skills"] = 4  # Very good match
+        elif match_percentage >= 0.4 or job_skill_matches >= 2:
+            criteria["computer_skills"] = 3  # Good match
+        elif match_percentage > 0:
+            criteria["computer_skills"] = 2  # Some match
+    else:
+        # Fall back to general evaluation if no job specified or no matches
+        if advanced_count > 3:
+            criteria["computer_skills"] = 5
+        elif advanced_count > 1 or (advanced_count > 0 and basic_count > 2):
+            criteria["computer_skills"] = 4
+        elif advanced_count > 0 or basic_count > 3:
+            criteria["computer_skills"] = 3
+        elif basic_count > 1:
+            criteria["computer_skills"] = 2
+        elif basic_count > 0:
+            criteria["computer_skills"] = 1
     
     # Scale all criteria values to 0-100 range for consistency with other examples
     # Fix: Only scale numeric criteria, not the custom_criteria dictionary
@@ -474,6 +564,7 @@ def process_applications_for_job(job_id, batch_size=3, wait_time=20):
     from django.conf import settings
     from jobs.models import Job, CandidateData
     from applications.models import Application
+    from django.db.models import Q  # Import Q for filtering
     import os
     
     try:
@@ -508,7 +599,7 @@ def process_applications_for_job(job_id, batch_size=3, wait_time=20):
     
     for i in range(0, len(pdf_files), batch_size):
         batch = pdf_files[i:i+batch_size]
-        batch_num = i//batch_size + 1
+        batch_num = i // batch_size + 1
         print(f"\nProcessing batch {batch_num}/{total_batches} for job {job_id}")
         
         # Extract information from the batch of CVs
@@ -527,6 +618,26 @@ def process_applications_for_job(job_id, batch_size=3, wait_time=20):
                 # Get the application object
                 application = Application.objects.get(id=app_id)
                 
+                # Check for duplicate names for the same job
+                extracted_name = extracted_info.get('name', '').strip().lower()
+                if not extracted_name:
+                    print(f"Skipping application {app_id} due to missing extracted name.")
+                    error_count += 1
+                    continue
+                
+                # Check if a candidate with the same name already exists for this job
+                existing_candidate = CandidateData.objects.filter(
+                    job=job,
+                    name__iexact=extracted_name
+                ).first()
+                
+                if existing_candidate:
+                    # Penalize the existing candidate
+                    existing_candidate.is_penalize = True
+                    existing_candidate.save(update_fields=['is_penalize'])
+                    print(f"Penalized existing candidate with name '{extracted_name}' for job {job_id}.")
+                    continue  # Skip saving the new candidate
+                
                 # Evaluate against criteria (using the job object)
                 criteria_scores = evaluate_criteria(extracted_info, job)
                 
@@ -537,7 +648,7 @@ def process_applications_for_job(job_id, batch_size=3, wait_time=20):
                     defaults={
                         'jobseeker': application.jobseeker,  # Add the jobseeker reference
                         'raw_data': extracted_info,
-                        'name': extracted_info.get('name', ''),
+                        'name': extracted_name,
                         'email': extracted_info.get('email', ''),
                         'years_experience': extracted_info.get('number_of_years_experience', ''),
                         'business_unit_flexibility': criteria_scores.get('business_unit_flexibility', 0),
@@ -549,6 +660,7 @@ def process_applications_for_job(job_id, batch_size=3, wait_time=20):
                         'computer_skills': criteria_scores.get('computer_skills', 0),
                         'custom_criteria_scores': criteria_scores.get('custom_criteria', {}),
                         'final_score': criteria_scores.get('final_score', 0),
+                        'is_penalize': False,  # New candidate is not penalized
                     }
                 )
                 

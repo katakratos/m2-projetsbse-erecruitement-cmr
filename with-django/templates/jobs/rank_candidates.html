@@ -2,82 +2,165 @@
 {% load static %}
 
 {% block main_content %}
-<div class="bg-white shadow overflow-hidden sm:rounded-lg">
-    <div class="px-4 py-5 sm:px-6 flex items-center justify-between">
-        <div>
-            <h2 class="text-lg leading-6 font-medium text-gray-900">Rank Candidates for {{ job.title }}</h2>
-            <p class="mt-1 max-w-2xl text-sm text-gray-500">
-                Apply AHP weights to calculate final candidate ranking
-            </p>
-        </div>
-        <a href="{% url 'job_detail' job.id %}" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-            <svg class="mr-2 -ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Back to Job
-        </a>
-    </div>
-    
-    <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
-        {% if candidate_count == 0 %}
-            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                        </svg>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm text-yellow-700">
-                            No candidate data found. Please <a href="{% url 'process_applications' job.id %}" class="font-medium underline hover:text-yellow-600">process the applications</a> first.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        {% elif not has_ahp_priority %}
-            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                        </svg>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm text-yellow-700">
-                            No AHP priorities have been set. Please <a href="{% url 'ahp_matrix' job.id %}" class="font-medium underline hover:text-yellow-600">set up the AHP matrix</a> before ranking candidates.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        {% else %}
-            <div class="text-center">
-                <p class="mb-4 text-gray-700">
-                    This will apply the AHP weights from your criteria priorities to all candidate data, recalculating their rankings.
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden" data-aos="fade-up">
+        <div class="px-6 py-5 bg-gradient-to-r from-blue-600 to-blue-700 text-white flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h2 class="text-xl font-bold">Rank Candidates for {{ job.title }}</h2>
+                <p class="mt-1 text-blue-100">
+                    <i class="fas fa-sort-amount-down mr-2"></i> Apply AHP weights to calculate final candidate ranking
                 </p>
-                <div id="ranking-status" class="mb-4"></div>
-                <form id="rank-form" method="post" action="{% url 'rank_candidates' job.id %}" class="inline-block">
-                    {% csrf_token %}
-                    <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        <svg class="mr-2 -ml-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"></path>
-                        </svg>
-                        Calculate Rankings
-                    </button>
-                </form>
             </div>
-        {% endif %}
+            <a href="{% url 'job_detail' job.id %}" class="btn-animate inline-flex items-center px-4 py-2 border border-white/20 text-sm font-medium rounded-md shadow-sm text-white bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-300 transition-all">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Job
+            </a>
+        </div>
+        
+        <div class="p-6">
+            {% if candidate_count == 0 %}
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-5 rounded-r-lg shadow-sm mb-6" data-aos="fade-up" data-aos-delay="100">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-blue-500 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-blue-800 font-medium text-lg">No Candidates Available</h4>
+                            <p class="text-blue-700 mt-1">
+                                No candidate data found. Please process the applications first.
+                            </p>
+                            <div class="mt-3">
+                                <a href="{% url 'process_applications' job.id %}" class="btn-animate inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                                    <i class="fas fa-play-circle mr-2"></i> Process Applications Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% elif not has_ahp_priority %}
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-5 rounded-r-lg shadow-sm mb-6" data-aos="fade-up" data-aos-delay="100">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-blue-500 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-blue-800 font-medium text-lg">Missing AHP Priorities</h4>
+                            <p class="text-blue-700 mt-1">
+                                No AHP priorities have been set. Please set up the AHP matrix before ranking candidates.
+                            </p>
+                            <div class="mt-3">
+                                <a href="{% url 'ahp_matrix' job.id %}" class="btn-animate inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                                    <i class="fas fa-balance-scale mr-2"></i> Set Up AHP Matrix
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="150">
+                    <div class="bg-blue-50 rounded-lg p-6 border border-blue-100 shadow-sm mb-8">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-info-circle text-blue-500 text-2xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-blue-800 font-medium text-lg">Rank Candidates with AHP</h4>
+                                <p class="text-blue-700 mt-1">
+                                    This will apply the AHP weights from your criteria priorities to all candidate data, recalculating their rankings based on their performance across all criteria.
+                                </p>
+                                <div class="mt-2 flex items-center">
+                                    <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">{{ candidate_count }} candidate{{ candidate_count|pluralize }} available</span>
+                                    <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded ml-2">AHP matrix configured</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="ranking-status" class="mb-6"></div>
+                    
+                    <div class="text-center" data-aos="fade-up" data-aos-delay="200">
+                        <form id="rank-form" method="post" action="{% url 'rank_candidates' job.id %}" class="inline-block">
+                            {% csrf_token %}
+                            <button type="submit" id="rank-button" class="btn-animate inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-lg text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all transform hover:scale-105">
+                                <i class="fas fa-sort-amount-down mr-2"></i> Calculate Rankings
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Animation container for the ranking process -->
+                    <div id="ranking-animation" class="hidden mt-8">
+                        <div class="relative">
+                            <div class="progress-bar-container bg-gray-200 h-2 w-full rounded-full overflow-hidden">
+                                <div id="progress-bar" class="h-full bg-gradient-to-r from-blue-500 to-blue-600 w-0 transition-all duration-500"></div>
+                            </div>
+                            <div class="mt-2 text-center text-sm text-gray-600">
+                                <span id="progress-text">Preparing data...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
     </div>
 </div>
+{% endblock %}
 
+{% block script %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('rank-form');
     const statusEl = document.getElementById('ranking-status');
+    const rankButton = document.getElementById('rank-button');
+    const rankingAnimation = document.getElementById('ranking-animation');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    
+    // Progress simulation steps
+    const progressSteps = [
+        { width: '10%', text: 'Preparing candidate data...' },
+        { width: '25%', text: 'Loading AHP weights...' },
+        { width: '40%', text: 'Calculating criteria scores...' },
+        { width: '60%', text: 'Applying weights to candidates...' },
+        { width: '80%', text: 'Finalizing rankings...' },
+        { width: '95%', text: 'Almost done...' }
+    ];
     
     if (form) {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-            statusEl.innerHTML = '<div class="text-blue-600">Processing... Please wait.</div>';
+            
+            // Hide the button and show animation
+            rankButton.disabled = true;
+            rankButton.classList.add('opacity-50');
+            rankingAnimation.classList.remove('hidden');
+            
+            // Show initial status
+            statusEl.innerHTML = `
+                <div class="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-circle-notch fa-spin text-blue-500"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-blue-700">
+                                Processing candidate rankings... Please wait.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Simulate progress steps
+            let stepIndex = 0;
+            const progressInterval = setInterval(() => {
+                if (stepIndex < progressSteps.length) {
+                    const step = progressSteps[stepIndex];
+                    progressBar.style.width = step.width;
+                    progressText.textContent = step.text;
+                    stepIndex++;
+                } else {
+                    clearInterval(progressInterval);
+                }
+            }, 800);
             
             // Get the form data
             const formData = new FormData(form);
@@ -92,21 +175,86 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => response.json())
             .then(data => {
+                // Clear the progress simulation
+                clearInterval(progressInterval);
+                progressBar.style.width = '100%';
+                progressText.textContent = 'Completed!';
+                
                 if (data.status === 'success') {
-                    statusEl.innerHTML = `<div class="text-green-600">Success! Ranked ${data.candidates_ranked} candidates.</div>`;
+                    statusEl.innerHTML = `
+                        <div class="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-check-circle text-green-500"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-green-700">
+                                        Success! Ranked ${data.candidates_ranked} candidates. Redirecting to results...
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
                     setTimeout(() => {
                         window.location.href = "{% url 'view_candidate_results' job.id %}";
                     }, 1500);
                 } else {
-                    statusEl.innerHTML = `<div class="text-red-600">Error: ${data.message}</div>`;
+                    rankButton.disabled = false;
+                    rankButton.classList.remove('opacity-50');
+                    
+                    statusEl.innerHTML = `
+                        <div class="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-exclamation-circle text-blue-500"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-blue-700">
+                                        Error: ${data.message}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
                 }
             })
             .catch(error => {
-                statusEl.innerHTML = '<div class="text-red-600">An error occurred. Please try again.</div>';
+                // Clear the progress simulation
+                clearInterval(progressInterval);
+                
+                rankButton.disabled = false;
+                rankButton.classList.remove('opacity-50');
+                
+                statusEl.innerHTML = `
+                    <div class="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-circle text-blue-500"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-blue-700">
+                                    An error occurred. Please try again.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
                 console.error('Error:', error);
             });
         });
     }
+    
+    // Add button animations
+    const buttons = document.querySelectorAll('.btn-animate');
+    buttons.forEach(button => {
+        button.addEventListener('mousedown', function() {
+            this.classList.add('scale-95');
+            setTimeout(() => {
+                this.classList.remove('scale-95');
+            }, 150);
+        });
+    });
 });
 </script>
 {% endblock %}

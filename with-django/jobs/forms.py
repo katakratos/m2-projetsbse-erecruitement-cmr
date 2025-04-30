@@ -9,7 +9,8 @@ class JobForm(forms.ModelForm):
         model = Job
         fields = [
             'title', 'description', 'nb_places', 'location', 'type', 
-            'experience', 'salary', 'deadline', 'requirements', 'skills',
+            'experience', 'years_experience_required', 'salary', 'deadline', 
+            'requirements', 'skills', 'remote_work',
             'business_unit_flexibility', 'past_experience_required', 
             'min_education_level', 'foreign_language_required', 
             'strategic_thinking_required', 'oral_communication_required',
@@ -17,6 +18,9 @@ class JobForm(forms.ModelForm):
         ]
         widgets = {
             'deadline': forms.DateInput(attrs={'type': 'date'}),
+        }
+        help_texts = {
+            'years_experience_required': 'Enter the number of years of experience required for this job',
         }
     
     def __init__(self, *args, **kwargs):
@@ -39,28 +43,42 @@ class JobForm(forms.ModelForm):
             ),
             Row(
                 Column('experience', css_class='w-full md:w-1/3 px-2'),
+                Column('years_experience_required', css_class='w-full md:w-1/3 px-2'),
                 Column('salary', css_class='w-full md:w-1/3 px-2'),
                 Column('deadline', css_class='w-full md:w-1/3 px-2'),
                 css_class='flex flex-wrap -mx-2'
             ),
             Field('requirements', css_class='w-full p-2 border rounded'),
             Field('skills', css_class='w-full p-2 border rounded'),
-            HTML("<h3 class='text-lg font-semibold mt-4'>Job Criteria</h3>"),
+            Field('remote_work', css_class='w-full p-2 border rounded'),
+            HTML("<h3 class='text-lg font-semibold mt-4 mb-3'>Job Criteria</h3>"),
             Div(
-                Field('business_unit_flexibility'),
-                Field('past_experience_required'),
-                Field('min_education_level', css_class='w-full p-2 border rounded'),
-                Field('foreign_language_required'),
-                Field('strategic_thinking_required'),
-                Field('oral_communication_required'),
-                Field('computer_skills_required'),
-                css_class='grid grid-cols-2 gap-3'
+                Div(
+                    Div(Field('business_unit_flexibility'), css_class='w-1/2 md:w-1/4 px-3'),
+                    Div(Field('past_experience_required'), css_class='w-1/2 md:w-1/4 px-3'),
+                    Div(Field('foreign_language_required'), css_class='w-1/2 md:w-1/4 px-3'),
+                    Div(Field('strategic_thinking_required'), css_class='w-1/2 md:w-1/4 px-3'),
+                    css_class='flex flex-wrap -mx-3'
+                ),
+                Div(
+                    Div(Field('oral_communication_required'), css_class='w-1/2 md:w-1/3 px-3'),
+                    Div(Field('computer_skills_required'), css_class='w-1/2 md:w-1/3 px-3'),
+                    Div(Field('min_education_level', css_class='w-full p-2 border rounded'), css_class='w-full md:w-1/3 px-3'),
+                    css_class='flex flex-wrap -mx-3 mt-3'
+                ),
+                css_class='mb-4 flex-row'
             ),
         )
 
 class CriteriaForm(forms.Form):
     multiple_criteria = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 5}),
+        widget=forms.Textarea(
+            attrs={
+                'rows': 5,
+                'class': 'flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+                'placeholder': 'Enter your criteria here...'
+            }
+        ),
         label="Job Criteria",
         help_text="Enter one criterion per line. Each line will be added as a separate criterion."
     )
@@ -69,9 +87,25 @@ class CriteriaForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_method = 'post'
-        self.helper.add_input(Submit('submit', 'Add Criteria', css_class='w-full py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600'))
+        self.helper.form_class = 'space-y-4'
+        
+        # Shadcn-styled submit button
+        self.helper.add_input(
+            Submit(
+                'submit', 
+                'Add Criteria', 
+                css_class='inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2'
+            )
+        )
+        
+        # Improve label styling
         self.helper.layout = Layout(
-            Field('multiple_criteria', css_class='w-full p-2 border rounded'),
+            Div(
+                HTML('<label for="id_multiple_criteria" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Job Criteria</label>'),
+                Field('multiple_criteria', css_class='mt-2'),
+                HTML('<p class="text-sm text-muted-foreground mt-1">Enter one criterion per line. Each line will be added as a separate criterion.</p>'),
+                css_class='space-y-2'
+            )
         )
 
 class AHPMatrixForm(forms.Form):

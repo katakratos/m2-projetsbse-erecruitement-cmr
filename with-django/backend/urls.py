@@ -25,9 +25,9 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('jobs/', include('jobs.urls')),
     path('applications/', include('applications.urls')),
+    path('notifications/', include('notifications.urls')),
     path('', RedirectView.as_view(url='jobs/', permanent=False)),
 ]
-
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -8,4 +8,5 @@ urlpatterns = [
     path('register/employer/', views.EmployerRegistrationView.as_view(), name='register_employer'),
     path('dashboard/jobseeker/', views.JobSeekerDashboardView.as_view(), name='jobseeker_dashboard'),
     path('dashboard/employer/', views.EmployerDashboardView.as_view(), name='employer_dashboard'),
+    path('profile/update/', views.ProfileUpdateView.as_view(), name='profile_update'),
 ]

@@ -45,10 +45,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.humanize",  # Added for number formatting
     # local app
     "users",
     "jobs",
     "applications",
+    "notifications",
     # third party app
     "rest_framework",
     "drf_yasg",
